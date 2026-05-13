@@ -18,6 +18,14 @@ function App() {
   const [isLive, setIsLive] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
+  function handleDelete(id: number) {
+    setVideos((prev) => {
+      const removed = prev.find((v) => v.id === id)
+      if (removed) URL.revokeObjectURL(removed.url)
+      return prev.filter((v) => v.id !== id)
+    })
+  }
+
   function handleUpload(e: React.ChangeEvent<HTMLInputElement>) {
     const files = Array.from(e.target.files ?? [])
     const newVideos: Video[] = files.map((file, i) => ({
@@ -90,36 +98,66 @@ function App() {
         </div>
 
         <ul className="space-y-3">
-            {videos.map((video) => (
-              <li
-                key={video.id}
-                className="bg-white border border-red-100 rounded-xl p-4 flex items-center gap-4 shadow-sm"
-              >
-                {/* Thumbnail placeholder */}
-                <div className="w-24 h-14 rounded-lg bg-red-50 flex items-center justify-center flex-shrink-0 overflow-hidden">
-                  <video src={video.url} className="w-full h-full object-cover" muted />
-                </div>
+          {videos.map((video) => (
+            <li
+              key={video.id}
+              className="bg-white border border-red-100 rounded-xl p-4 flex items-center gap-4 shadow-sm"
+            >
+              {/* Thumbnail */}
+              <div className="w-24 h-14 rounded-lg bg-red-50 overflow-hidden">
+                <video src={video.url} className="w-full h-full object-cover" muted />
+              </div>
 
-                <div className="flex-1 min-w-0">
-                  <p className="font-medium text-sm truncate">{video.name}</p>
-                  <p className="text-xs text-gray-400 mt-0.5">
-                    {video.size} · {video.uploadedAt}
-                  </p>
-                </div>
+              <div className="flex-1 min-w-0">
+                <p className="font-medium text-sm truncate">{video.name}</p>
+                <p className="text-xs text-gray-400 mt-0.5">
+                  {video.size} · {video.uploadedAt}
+                </p>
+              </div>
 
+              <div className="flex items-center gap-3">
                 <a
                   href={video.url}
                   target="_blank"
                   rel="noreferrer"
-                  className="text-xs text-red-600 hover:underline flex-shrink-0"
+                  className="text-xs text-red-600 hover:underline"
                 >
                   Play
                 </a>
-              </li>
-            ))}
-          </ul>
+                <button
+                  onClick={() => handleDelete(video.id)}
+                  aria-label={`Delete ${video.name}`}
+                  className="p-1.5 rounded-lg text-gray-400 hover:text-red-600 hover:bg-red-50 transition-colors"
+                >
+                  <TrashIcon />
+                </button>
+              </div>
+            </li>
+          ))}
+        </ul>
       </main>
     </div>
+  )
+}
+
+function TrashIcon() {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={2}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className="w-4 h-4"
+    >
+      <polyline points="3 6 5 6 21 6" />
+      <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" />
+      <path d="M10 11v6" />
+      <path d="M14 11v6" />
+      <path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2" />
+    </svg>
   )
 }
 
