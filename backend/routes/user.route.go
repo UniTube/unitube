@@ -1,11 +1,12 @@
 package routes
 
-import  (
+import (
 	"backend/controllers"
+
 	"github.com/gin-gonic/gin"
 )
 
-func SetupUserRoutes(router *gin.Engine, controller *controllers.Controller) {
+func SetupUserRoutes(router *gin.RouterGroup, controller *controllers.UserController) {
 	router.POST("/users", controller.CreateUser)
 	router.GET("/users", controller.GetAllUsers)
 	router.GET("/users/:id", controller.GetUserByID)
