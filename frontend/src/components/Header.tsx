@@ -2,54 +2,53 @@ import { Link } from 'react-router-dom'
 
 interface HeaderProps {
   onUploadClick?: () => void
-  onToggleLive?: () => void
+  onGoLiveClick?: () => void
   isLive?: boolean
   uploadInput?: React.ReactNode
 }
 
-export default function Header({ onUploadClick, onToggleLive, isLive, uploadInput }: HeaderProps) {
+export default function Header({ onUploadClick, onGoLiveClick, isLive, uploadInput }: HeaderProps) {
   return (
-    <>
-      <header className="bg-white border-b border-red-100 px-6 py-4 flex items-center justify-between shadow-sm">
-        <Link to="/" className="text-xl font-bold tracking-tight text-red-600 hover:opacity-80 transition-opacity">
-          UniTube
-        </Link>
+    <header className="bg-white border-b border-red-100 px-6 py-4 flex items-center justify-between shadow-sm">
+      <Link
+        to="/"
+        className="text-xl font-bold tracking-tight text-red-600 hover:opacity-80 transition-opacity"
+      >
+        UniTube
+      </Link>
 
-        {onUploadClick && onToggleLive !== undefined && (
-          <div className="flex items-center gap-3">
-            <button
-              onClick={onUploadClick}
-              className="flex items-center gap-2 bg-red-600 hover:bg-red-700 active:bg-red-800 text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors"
+      {onUploadClick && (
+        <div className="flex items-center gap-3">
+          <button
+            onClick={onUploadClick}
+            className="flex items-center gap-2 bg-red-600 hover:bg-red-700 active:bg-red-800 text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors"
+          >
+            <UploadIcon />
+            Upload video
+          </button>
+          {uploadInput}
+
+          {isLive ? (
+            /* Already live — link back to the broadcast page */
+            <Link
+              to="/live"
+              className="flex items-center gap-2 bg-red-600 text-white text-sm font-medium px-4 py-2 rounded-lg"
             >
-              <UploadIcon />
-              Upload video
-            </button>
-            {uploadInput}
-
+              <span className="inline-block w-2 h-2 rounded-full bg-white animate-pulse" />
+              You are live
+            </Link>
+          ) : (
             <button
-              onClick={onToggleLive}
-              className={`flex items-center gap-2 text-sm font-medium px-4 py-2 rounded-lg transition-colors ${
-                isLive
-                  ? 'bg-red-600 hover:bg-red-700 active:bg-red-800 text-white'
-                  : 'bg-white hover:bg-red-50 text-red-600 border border-red-200'
-              }`}
+              onClick={onGoLiveClick}
+              className="flex items-center gap-2 bg-white hover:bg-red-50 text-red-600 border border-red-200 text-sm font-medium px-4 py-2 rounded-lg transition-colors"
             >
-              <span
-                className={`inline-block w-2 h-2 rounded-full ${isLive ? 'bg-white animate-pulse' : 'bg-red-500'}`}
-              />
-              {isLive ? 'End stream' : 'Go live'}
+              <span className="inline-block w-2 h-2 rounded-full bg-red-500" />
+              Go live
             </button>
-          </div>
-        )}
-      </header>
-
-      {isLive && (
-        <div className="bg-red-600 text-white text-sm font-medium text-center py-2 flex items-center justify-center gap-2">
-          <span className="inline-block w-2 h-2 rounded-full bg-white animate-pulse" />
-          You are live
+          )}
         </div>
       )}
-    </>
+    </header>
   )
 }
 

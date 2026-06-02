@@ -1,6 +1,7 @@
-import { useRef } from 'react'
-import { Link } from 'react-router-dom'
+import { useRef, useState } from 'react'
+import { Link, useNavigate } from 'react-router-dom'
 import Header from '../components/Header'
+import GoLiveModal from '../components/GoLiveModal'
 import { Video } from '../types'
 
 function formatBytes(bytes: number): string {
@@ -13,11 +14,13 @@ interface HomePageProps {
   isLive: boolean
   onUpload: (videos: Video[]) => void
   onDelete: (id: number) => void
-  onToggleLive: () => void
+  onGoLive: (title: string, stream: MediaStream) => void
 }
 
-export default function HomePage({ videos, isLive, onUpload, onDelete, onToggleLive }: HomePageProps) {
+export default function HomePage({ videos, isLive, onUpload, onDelete, onGoLive }: HomePageProps) {
   const fileInputRef = useRef<HTMLInputElement>(null)
+  const [showModal, setShowModal] = useState(false)
+  const navigate = useNavigate()
 
   function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
     const files = Array.from(e.target.files ?? [])
@@ -33,11 +36,17 @@ export default function HomePage({ videos, isLive, onUpload, onDelete, onToggleL
     e.target.value = ''
   }
 
+  function handleGoLiveStart(title: string, stream: MediaStream) {
+    setShowModal(false)
+    onGoLive(title, stream)
+    navigate('/live')
+  }
+
   return (
     <div className="min-h-screen bg-red-50 text-gray-900">
       <Header
         onUploadClick={() => fileInputRef.current?.click()}
-        onToggleLive={onToggleLive}
+        onGoLiveClick={() => setShowModal(true)}
         isLive={isLive}
         uploadInput={
           <input
@@ -74,10 +83,9 @@ export default function HomePage({ videos, isLive, onUpload, onDelete, onToggleL
                 key={video.id}
                 className="bg-white border border-red-100 rounded-xl p-4 flex items-center gap-4 shadow-sm"
               >
-                {/* Thumbnail — clicking navigates to the video page */}
                 <Link
                   to={`/watch/${video.id}`}
-                  className="w-24 h-14 rounded-lg bg-red-50 shrink-0 overflow-hidden block hover:opacity-90 transition-opacity"
+                  className="w-24 h-14 rounded-lg bg-red-50 flex-shrink-0 overflow-hidden block hover:opacity-90 transition-opacity"
                 >
                   <video src={video.url} className="w-full h-full object-cover" muted />
                 </Link>
@@ -94,11 +102,8 @@ export default function HomePage({ videos, isLive, onUpload, onDelete, onToggleL
                   </p>
                 </div>
 
-                <div className="flex items-center gap-3 shrink-0">
-                  <Link
-                    to={`/watch/${video.id}`}
-                    className="text-xs text-red-600 hover:underline"
-                  >
+                <div className="flex items-center gap-3 flex-shrink-0">
+                  <Link to={`/watch/${video.id}`} className="text-xs text-red-600 hover:underline">
                     Watch
                   </Link>
                   <button
@@ -114,6 +119,10 @@ export default function HomePage({ videos, isLive, onUpload, onDelete, onToggleL
           </ul>
         )}
       </main>
+
+      {showModal && (
+        <GoLiveModal onStart={handleGoLiveStart} onClose={() => setShowModal(false)} />
+      )}
     </div>
   )
 }

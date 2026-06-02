@@ -43,7 +43,7 @@ export default function VideoPage({ videos }: VideoPageProps) {
           <div className="flex items-center justify-between mt-3 pb-4 border-b border-red-100">
             {/* Author avatar + name */}
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-red-600 flex items-center justify-center text-white font-bold text-sm flex-shrink-0">
+              <div className="w-10 h-10 rounded-full bg-red-600 flex items-center justify-center text-white font-bold text-sm shrink-0">
                 {video.author.charAt(0).toUpperCase()}
               </div>
               <div>

@@ -2,11 +2,13 @@ import { useState } from 'react'
 import { Routes, Route } from 'react-router-dom'
 import HomePage from './pages/HomePage'
 import VideoPage from './pages/VideoPage'
+import LivePage from './pages/LivePage'
 import { Video } from './types'
 
 export default function App() {
   const [videos, setVideos] = useState<Video[]>([])
-  const [isLive, setIsLive] = useState(false)
+  const [stream, setStream] = useState<MediaStream | null>(null)
+  const [liveTitle, setLiveTitle] = useState('')
 
   function handleUpload(newVideos: Video[]) {
     setVideos((prev) => [...newVideos, ...prev])
@@ -20,6 +22,17 @@ export default function App() {
     })
   }
 
+  function handleGoLive(title: string, mediaStream: MediaStream) {
+    setLiveTitle(title)
+    setStream(mediaStream)
+  }
+
+  function handleEndStream() {
+    stream?.getTracks().forEach((t) => t.stop())
+    setStream(null)
+    setLiveTitle('')
+  }
+
   return (
     <Routes>
       <Route
@@ -27,14 +40,18 @@ export default function App() {
         element={
           <HomePage
             videos={videos}
-            isLive={isLive}
+            isLive={!!stream}
             onUpload={handleUpload}
             onDelete={handleDelete}
-            onToggleLive={() => setIsLive((v) => !v)}
+            onGoLive={handleGoLive}
           />
         }
       />
       <Route path="/watch/:id" element={<VideoPage videos={videos} />} />
+      <Route
+        path="/live"
+        element={<LivePage stream={stream} title={liveTitle} onEnd={handleEndStream} />}
+      />
     </Routes>
   )
 }
