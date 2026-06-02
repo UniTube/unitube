@@ -68,9 +68,9 @@ export default function LivePage({ stream, title, onEnd }: LivePageProps) {
   if (!stream) return null
 
   return (
-    <div className="min-h-screen bg-gray-950 text-white flex flex-col">
+    <div className="min-h-screen bg-neutral-950 text-white flex flex-col">
       {/* Top bar */}
-      <header className="bg-gray-900 border-b border-gray-800 px-6 py-3 flex items-center justify-between">
+      <header className="bg-neutral-900 border-b border-neutral-800 px-6 py-3 flex items-center justify-between">
         <Link to="/" className="text-lg font-bold text-red-500 hover:opacity-80 transition-opacity">
           UniTube
         </Link>
@@ -80,7 +80,7 @@ export default function LivePage({ stream, title, onEnd }: LivePageProps) {
             <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
             LIVE
           </span>
-          <span className="text-sm text-gray-400 font-mono">{formatDuration(duration)}</span>
+          <span className="text-sm text-neutral-400 font-mono">{formatDuration(duration)}</span>
         </div>
 
         <button
@@ -106,22 +106,22 @@ export default function LivePage({ stream, title, onEnd }: LivePageProps) {
         </div>
 
         {/* Sidebar */}
-        <aside className="w-full lg:w-80 bg-gray-900 border-t lg:border-t-0 lg:border-l border-gray-800 flex flex-col">
+        <aside className="w-full lg:w-80 bg-neutral-900 border-t lg:border-t-0 lg:border-l border-neutral-800 flex flex-col">
           {/* Stream info */}
-          <div className="px-5 py-4 border-b border-gray-800">
+          <div className="px-5 py-4 border-b border-neutral-800">
             <h1 className="font-semibold text-white text-sm leading-snug">{title}</h1>
-            <p className="text-xs text-gray-400 mt-1">Broadcasting now</p>
+            <p className="text-xs text-neutral-400 mt-1">Broadcasting now</p>
           </div>
 
           {/* Stats */}
-          <div className="px-5 py-4 border-b border-gray-800 grid grid-cols-2 gap-4">
+          <div className="px-5 py-4 border-b border-neutral-800 grid grid-cols-2 gap-4">
             <Stat label="Viewers" value={viewers.toString()} highlight />
             <Stat label="Duration" value={formatDuration(duration)} />
           </div>
 
           {/* Stream health */}
-          <div className="px-5 py-4 border-b border-gray-800">
-            <p className="text-xs font-medium text-gray-400 mb-3">Stream health</p>
+          <div className="px-5 py-4 border-b border-neutral-800">
+            <p className="text-xs font-medium text-neutral-400 mb-3">Stream health</p>
             <div className="space-y-2">
               <HealthRow label="Video" status="good" />
               <HealthRow label="Audio" status={stream.getAudioTracks().length > 0 ? 'good' : 'none'} />
@@ -130,20 +130,20 @@ export default function LivePage({ stream, title, onEnd }: LivePageProps) {
 
           {/* Track list */}
           <div className="px-5 py-4 flex-1">
-            <p className="text-xs font-medium text-gray-400 mb-3">Active tracks</p>
+            <p className="text-xs font-medium text-neutral-400 mb-3">Active tracks</p>
             <ul className="space-y-2">
               {stream.getTracks().map((track) => (
                 <li key={track.id} className="flex items-center gap-2 text-xs">
                   <span className="w-1.5 h-1.5 rounded-full bg-green-400 flex-shrink-0" />
-                  <span className="text-gray-300 capitalize">{track.kind}</span>
-                  <span className="text-gray-500 truncate ml-auto">{track.label || 'Unknown device'}</span>
+                  <span className="text-neutral-300 capitalize">{track.kind}</span>
+                  <span className="text-neutral-500 truncate ml-auto">{track.label || 'Unknown device'}</span>
                 </li>
               ))}
             </ul>
           </div>
 
           {/* End stream */}
-          <div className="px-5 py-4 border-t border-gray-800">
+          <div className="px-5 py-4 border-t border-neutral-800">
             <button
               onClick={handleEnd}
               className="w-full py-2.5 rounded-lg bg-red-600 hover:bg-red-700 text-white text-sm font-medium transition-colors"
@@ -160,7 +160,7 @@ export default function LivePage({ stream, title, onEnd }: LivePageProps) {
 function Stat({ label, value, highlight }: { label: string; value: string; highlight?: boolean }) {
   return (
     <div>
-      <p className="text-xs text-gray-500">{label}</p>
+      <p className="text-xs text-neutral-500">{label}</p>
       <p className={`text-lg font-semibold mt-0.5 ${highlight ? 'text-red-400' : 'text-white'}`}>{value}</p>
     </div>
   )
@@ -169,10 +169,10 @@ function Stat({ label, value, highlight }: { label: string; value: string; highl
 function HealthRow({ label, status }: { label: string; status: 'good' | 'none' }) {
   return (
     <div className="flex items-center justify-between">
-      <span className="text-xs text-gray-300">{label}</span>
+      <span className="text-xs text-neutral-300">{label}</span>
       <span
         className={`text-xs font-medium px-2 py-0.5 rounded-full ${
-          status === 'good' ? 'bg-green-900/60 text-green-400' : 'bg-gray-800 text-gray-500'
+          status === 'good' ? 'bg-green-900/60 text-green-400' : 'bg-neutral-800 text-neutral-500'
         }`}
       >
         {status === 'good' ? 'Good' : 'No signal'}
