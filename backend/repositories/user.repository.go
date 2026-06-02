@@ -1,7 +1,7 @@
 package repositories
 
 import (
-    "gorm.io/gorm"
+	"gorm.io/gorm"
 
 	"backend/models"
 )
@@ -23,7 +23,7 @@ func (r *UserRepo) CreateUser(user *models.User) error {
 
 func (r *UserRepo) GetUserByID(id uint) (*models.User, error) {
 	var user models.User
-	if err := r.Db.First(&user, id).Error; err != nil {
+	if err := r.Db.Model(&user).Preload("Videos").First(&user, id).Error; err != nil {
 		return nil, err
 	}
 	return &user, nil

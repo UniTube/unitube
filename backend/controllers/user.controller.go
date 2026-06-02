@@ -1,22 +1,34 @@
 package controllers
 
 import (
-	"fmt"
 	"backend/dtos"
 	"backend/services"
+	"fmt"
 	"net/http"
+
 	"github.com/gin-gonic/gin"
 )
 
-type Controller struct {
+type UserController struct {
 	userService *services.UserService
 }
 
-func NewController(userService *services.UserService) *Controller {
-	return &Controller{userService: userService}
+func NewUserController(userService *services.UserService) *UserController {
+	return &UserController{userService: userService}
 }
 
-func (c *Controller) CreateUser(ctx *gin.Context) {
+// CreateUser godoc
+// @Summary Create a new user
+// @Description Create a new user with the provided information
+// @Tags users
+// @Accept json
+// @Produce json
+// @Param user body dtos.UserDTO true "User object"
+// @Success 201 {object} dtos.UserDTO
+// @Failure 400 {object} map[string]string
+// @Failure 500 {object} map[string]string
+// @Router /users [post]
+func (c *UserController) CreateUser(ctx *gin.Context) {
 	var userDTO dtos.UserDTO
 	if err := ctx.ShouldBindJSON(&userDTO); err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
@@ -29,7 +41,18 @@ func (c *Controller) CreateUser(ctx *gin.Context) {
 	ctx.JSON(http.StatusCreated, userDTO)
 }
 
-func (c *Controller) GetUserByID(ctx *gin.Context) {
+// GetUserByID godoc
+// @Summary Get a user by ID
+// @Description Get a user by its ID
+// @Tags users
+// @Accept json
+// @Produce json
+// @Param id path integer true "User ID"
+// @Success 200 {object} dtos.UserDTO
+// @Failure 400 {object} map[string]string
+// @Failure 404 {object} map[string]string
+// @Router /users/{id} [get]
+func (c *UserController) GetUserByID(ctx *gin.Context) {
 	idParam := ctx.Param("id")
 	var id uint
 	if _, err := fmt.Sscanf(idParam, "%d", &id); err != nil {
@@ -44,7 +67,18 @@ func (c *Controller) GetUserByID(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, userDTO)
 }
 
-func (c *Controller) UpdateUser(ctx *gin.Context) {
+// UpdateUser godoc
+// @Summary Update a user
+// @Description Update an existing user
+// @Tags users
+// @Accept json
+// @Produce json
+// @Param user body dtos.UserDTO true "User object"
+// @Success 200 {object} dtos.UserDTO
+// @Failure 400 {object} map[string]string
+// @Failure 500 {object} map[string]string
+// @Router /users/{id} [put]
+func (c *UserController) UpdateUser(ctx *gin.Context) {
 	var userDTO dtos.UserDTO
 	if err := ctx.ShouldBindJSON(&userDTO); err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
@@ -57,7 +91,18 @@ func (c *Controller) UpdateUser(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, userDTO)
 }
 
-func (c *Controller) DeleteUser(ctx *gin.Context){
+// DeleteUser godoc
+// @Summary Delete a user
+// @Description Delete a user by ID
+// @Tags users
+// @Accept json
+// @Produce json
+// @Param id path integer true "User ID"
+// @Success 200 {object} map[string]string
+// @Failure 400 {object} map[string]string
+// @Failure 500 {object} map[string]string
+// @Router /users/{id} [delete]
+func (c *UserController) DeleteUser(ctx *gin.Context){
 	idParam := ctx.Param("id")
 	var id uint
 	if _, err := fmt.Sscanf(idParam, "%d", &id); err != nil {
@@ -71,7 +116,16 @@ func (c *Controller) DeleteUser(ctx *gin.Context){
 	ctx.JSON(http.StatusOK, gin.H{"message": "User deleted successfully"})
 }
 
-func (c *Controller) GetAllUsers(ctx *gin.Context) {
+// GetAllUsers godoc
+// @Summary Get all users
+// @Description Retrieve all users from the database
+// @Tags users
+// @Accept json
+// @Produce json
+// @Success 200 {array} dtos.UserDTO
+// @Failure 500 {object} map[string]string
+// @Router /users [get]
+func (c *UserController) GetAllUsers(ctx *gin.Context) {
 	userDTOs, err := c.userService.GetAllUsers()
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
