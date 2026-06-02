@@ -34,3 +34,10 @@ func (v *VideoRepo) GetAllVideos() ([]models.Video, error) {
 	return videos, nil
 }
 
+func (v *VideoRepo) GetVideoByID(id uint) (*models.Video, error) {
+	var video models.Video
+	if err := v.Db.First(&video, id).Error; err != nil {
+		return nil, err
+	}
+	return &video, nil
+}

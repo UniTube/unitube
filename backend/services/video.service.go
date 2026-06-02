@@ -4,6 +4,7 @@ import (
 	"backend/dtos"
 	"backend/models"
 	"backend/repositories"
+	"fmt"
 )
 
 type VideoService struct {
@@ -21,6 +22,7 @@ func (v  *VideoService) CreateVideo(videoDTO *dtos.VideoDTO) error {
 		Description: videoDTO.Description,
 		URL: videoDTO.URL,
 		AuthorID: videoDTO.AuthorID,
+		MimeType: videoDTO.MimeType,
 	}	
 	 err := v.repo.CreateVideo(video)
 	if err != nil {
@@ -41,38 +43,28 @@ func (v *VideoService) GetVideos() ([]dtos.VideoDTO, error) {
 			Title:       video.Title,
 			Description: video.Description,
 			URL:         video.URL,
+			MimeType: video.MimeType,
 			AuthorID:    video.AuthorID,
 		}
 	}
 	return videoDTOs, nil
 }
 
-// func(v *VideoService) GetVideoByID(id uint) (*dtos.VideoDTO, error) {
-// 	videos, err := v.repo.GetAllVideos()
-// 	if err != nil {
-// 		return nil, err
-// 	}
-// 	for _, video := range videos {
-// 		if video.ID == id {
-// 			return &dtos.VideoDTO{
-// 				ID:          video.ID,
-// 				Title:       video.Title,
-// 				Description: video.Description,
-// 				URL:         video.URL,
-// 				AuthorID:    video.AuthorID,
-// 			}, nil
-// 		}
-// 	}
-// 	return nil, nil
-// }
+func (v *VideoService) GetVideoByID(id uint) (*dtos.VideoDTO, error) {
+	video, _ := v.repo.GetVideoByID(id)
+	if video == nil {
+		return nil, fmt.Errorf("Video with ID %d not found", id)
+	}
 
-// func (v *VideoService) UpdateVideo(videoDTO *dtos.VideoDTO) error {
-// 	video := &models.Video{
-// 		ID: videoDTO.ID,	
-// 		Title: videoDTO.Title,
-// 		Description: videoDTO.Description,
-// 		URL: videoDTO.URL,
-// 		AuthorID: videoDTO.AuthorID,
-// 	}
-// 	return v.repo.UpdateVideo(video)
-// }
+	videoDTO := &dtos.VideoDTO{
+		ID:          video.ID,
+		Title:       video.Title,
+		Description: video.Description,
+		URL:         video.URL,
+		MimeType: video.MimeType,
+		AuthorID:    video.AuthorID,
+	}
+	return videoDTO, nil
+}
+
+
