@@ -152,14 +152,14 @@ export default function GoLiveModal({ onStart, onClose }: GoLiveModalProps) {
       className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 px-4"
       onClick={(e) => e.target === e.currentTarget && handleClose()}
     >
-      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl overflow-hidden">
+      <div className="bg-white dark:bg-zinc-900 rounded-2xl shadow-2xl w-full max-w-2xl overflow-hidden">
 
         {/* Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
-          <h2 className="text-base font-semibold text-gray-900">Go live</h2>
+        <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100 dark:border-zinc-800">
+          <h2 className="text-base font-semibold text-gray-900 dark:text-zinc-100">Go live</h2>
           <button
             onClick={handleClose}
-            className="p-1.5 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors"
+            className="p-1.5 rounded-lg text-gray-400 dark:text-zinc-500 hover:text-gray-600 dark:hover:text-zinc-300 hover:bg-gray-100 dark:hover:bg-zinc-800 transition-colors"
             aria-label="Close"
           >
             <XIcon />
@@ -240,7 +240,7 @@ export default function GoLiveModal({ onStart, onClose }: GoLiveModalProps) {
 
             {/* Stream title */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1.5">
+              <label className="block text-sm font-medium text-gray-700 dark:text-zinc-300 mb-1.5">
                 Stream title <span className="text-red-500">*</span>
               </label>
               <input
@@ -249,21 +249,21 @@ export default function GoLiveModal({ onStart, onClose }: GoLiveModalProps) {
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
                 onKeyDown={(e) => e.key === 'Enter' && handleStart()}
-                className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
+                className="w-full border border-gray-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-gray-900 dark:text-zinc-100 placeholder:text-gray-400 dark:placeholder:text-zinc-500 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
                 autoFocus
               />
             </div>
 
             {/* Device status */}
             <div className="space-y-2">
-              <p className="text-sm font-medium text-gray-700">Devices</p>
+              <p className="text-sm font-medium text-gray-700 dark:text-zinc-300">Devices</p>
               <DeviceRow icon={<CameraOnIcon />} label="Camera"       value={cameraOn ? cameraLabel : 'Off'}   active={cameraOn && !acquiring} />
               <DeviceRow icon={<MicOnIcon />}    label="Microphone"   value={micOn    ? micLabel    : 'Muted'} active={micOn    && !acquiring} />
             </div>
 
             {/* Audio visualiser */}
             <div>
-              <p className="text-sm font-medium text-gray-700 mb-2">Audio</p>
+              <p className="text-sm font-medium text-gray-700 dark:text-zinc-300 mb-2">Audio</p>
               <div className="flex items-center gap-3">
                 <div className="flex items-end gap-0.5 h-6 w-24">
                   {Array.from({ length: BAR_COUNT }).map((_, i) => (
@@ -280,8 +280,8 @@ export default function GoLiveModal({ onStart, onClose }: GoLiveModalProps) {
                   disabled={acquiring || !!permissionError}
                   className={`text-xs font-medium px-3 py-1.5 rounded-lg border transition-colors disabled:opacity-40 ${
                     testingAudio
-                      ? 'border-red-300 bg-red-50 text-red-600'
-                      : 'border-gray-200 text-gray-600 hover:bg-gray-50'
+                      ? 'border-red-300 bg-red-50 dark:bg-red-950/40 text-red-600 dark:text-red-400'
+                      : 'border-gray-200 dark:border-zinc-700 text-gray-600 dark:text-zinc-400 hover:bg-gray-50 dark:hover:bg-zinc-800'
                   }`}
                 >
                   {testingAudio ? 'Stop test' : 'Test audio'}
@@ -298,7 +298,7 @@ export default function GoLiveModal({ onStart, onClose }: GoLiveModalProps) {
             <div className="flex gap-3 pt-1">
               <button
                 onClick={handleClose}
-                className="flex-1 py-2.5 rounded-lg border border-gray-200 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"
+                className="flex-1 py-2.5 rounded-lg border border-gray-200 dark:border-zinc-700 text-sm font-medium text-gray-700 dark:text-zinc-300 hover:bg-gray-50 dark:hover:bg-zinc-800 transition-colors"
               >
                 Cancel
               </button>
@@ -356,10 +356,10 @@ interface DeviceRowProps {
 
 function DeviceRow({ icon, label, value, active }: DeviceRowProps) {
   return (
-    <div className="flex items-center gap-3 py-2 px-3 rounded-lg bg-gray-50">
-      <span className={`flex-shrink-0 ${active ? 'text-gray-600' : 'text-gray-300'}`}>{icon}</span>
-      <span className="text-xs text-gray-500 w-20 flex-shrink-0">{label}</span>
-      <span className={`text-xs truncate ${active ? 'text-gray-800' : 'text-gray-400'}`}>{value}</span>
+    <div className="flex items-center gap-3 py-2 px-3 rounded-lg bg-gray-50 dark:bg-zinc-800">
+      <span className={`flex-shrink-0 ${active ? 'text-gray-600 dark:text-zinc-400' : 'text-gray-300 dark:text-zinc-600'}`}>{icon}</span>
+      <span className="text-xs text-gray-500 dark:text-zinc-500 w-20 flex-shrink-0">{label}</span>
+      <span className={`text-xs truncate ${active ? 'text-gray-800 dark:text-zinc-200' : 'text-gray-400 dark:text-zinc-600'}`}>{value}</span>
     </div>
   )
 }

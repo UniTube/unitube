@@ -43,7 +43,7 @@ export default function HomePage({ videos, isLive, onUpload, onDelete, onGoLive 
   }
 
   return (
-    <div className="min-h-screen bg-red-50 text-gray-900">
+    <div className="min-h-screen bg-red-50 dark:bg-zinc-950 text-gray-900 dark:text-zinc-100">
       <Header
         onUploadClick={() => fileInputRef.current?.click()}
         onGoLiveClick={() => setShowModal(true)}
@@ -62,8 +62,8 @@ export default function HomePage({ videos, isLive, onUpload, onDelete, onGoLive 
 
       <main className="max-w-4xl mx-auto px-6 py-10">
         <div className="flex items-center justify-between mb-6">
-          <h2 className="text-lg font-semibold text-gray-800">Videos</h2>
-          <span className="text-sm text-gray-400">
+          <h2 className="text-lg font-semibold text-gray-800 dark:text-zinc-200">Videos</h2>
+          <span className="text-sm text-gray-400 dark:text-zinc-500">
             {videos.length} {videos.length === 1 ? 'video' : 'videos'}
           </span>
         </div>
@@ -71,7 +71,7 @@ export default function HomePage({ videos, isLive, onUpload, onDelete, onGoLive 
         {videos.length === 0 ? (
           <button
             onClick={() => fileInputRef.current?.click()}
-            className="w-full border-2 border-dashed border-red-200 rounded-xl py-16 flex flex-col items-center gap-3 text-red-300 hover:border-red-400 hover:text-red-500 transition-colors"
+            className="w-full border-2 border-dashed border-red-200 dark:border-zinc-700 rounded-xl py-16 flex flex-col items-center gap-3 text-red-300 dark:text-zinc-600 hover:border-red-400 dark:hover:border-red-800 hover:text-red-500 dark:hover:text-red-500 transition-colors"
           >
             <UploadEmptyIcon />
             <span className="text-sm font-medium">Click to upload your first video</span>
@@ -81,11 +81,11 @@ export default function HomePage({ videos, isLive, onUpload, onDelete, onGoLive 
             {videos.map((video) => (
               <li
                 key={video.id}
-                className="bg-white border border-red-100 rounded-xl p-4 flex items-center gap-4 shadow-sm"
+                className="bg-white dark:bg-zinc-900 border border-red-100 dark:border-zinc-800 rounded-xl p-4 flex items-center gap-4 shadow-sm"
               >
                 <Link
                   to={`/watch/${video.id}`}
-                  className="w-24 h-14 rounded-lg bg-red-50 flex-shrink-0 overflow-hidden block hover:opacity-90 transition-opacity"
+                  className="w-24 h-14 rounded-lg bg-red-50 dark:bg-zinc-800 flex-shrink-0 overflow-hidden block hover:opacity-90 transition-opacity"
                 >
                   <video src={video.url} className="w-full h-full object-cover" muted />
                 </Link>
@@ -93,23 +93,26 @@ export default function HomePage({ videos, isLive, onUpload, onDelete, onGoLive 
                 <div className="flex-1 min-w-0">
                   <Link
                     to={`/watch/${video.id}`}
-                    className="font-medium text-sm truncate block hover:text-red-600 transition-colors"
+                    className="font-medium text-sm truncate block hover:text-red-600 dark:hover:text-red-400 transition-colors"
                   >
                     {video.name}
                   </Link>
-                  <p className="text-xs text-gray-400 mt-0.5">
+                  <p className="text-xs text-gray-400 dark:text-zinc-500 mt-0.5">
                     {video.author} · {video.size} · {video.uploadedAt}
                   </p>
                 </div>
 
                 <div className="flex items-center gap-3 flex-shrink-0">
-                  <Link to={`/watch/${video.id}`} className="text-xs text-red-600 hover:underline">
+                  <Link
+                    to={`/watch/${video.id}`}
+                    className="text-xs text-red-600 dark:text-red-400 hover:underline"
+                  >
                     Watch
                   </Link>
                   <button
                     onClick={() => onDelete(video.id)}
                     aria-label={`Delete ${video.name}`}
-                    className="p-1.5 rounded-lg text-gray-400 hover:text-red-600 hover:bg-red-50 transition-colors"
+                    className="p-1.5 rounded-lg text-gray-400 dark:text-zinc-500 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-zinc-800 transition-colors"
                   >
                     <TrashIcon />
                   </button>
@@ -129,16 +132,7 @@ export default function HomePage({ videos, isLive, onUpload, onDelete, onGoLive 
 
 function UploadEmptyIcon() {
   return (
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth={2}
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      className="w-8 h-8"
-    >
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" className="w-8 h-8">
       <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
       <polyline points="17 8 12 3 7 8" />
       <line x1="12" y1="3" x2="12" y2="15" />
@@ -148,16 +142,7 @@ function UploadEmptyIcon() {
 
 function TrashIcon() {
   return (
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth={2}
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      className="w-4 h-4"
-    >
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" className="w-4 h-4">
       <polyline points="3 6 5 6 21 6" />
       <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" />
       <path d="M10 11v6" />
