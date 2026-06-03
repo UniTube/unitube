@@ -1,63 +1,40 @@
-import { useRef, useState } from 'react'
+import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import Header from '../components/Header'
 import GoLiveModal from '../components/GoLiveModal'
+import UploadVideoModal from '../components/UploadVideoModal'
 import { Video } from '../types'
-
-function formatBytes(bytes: number): string {
-  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`
-  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`
-}
 
 interface HomePageProps {
   videos: Video[]
   isLive: boolean
-  onUpload: (videos: Video[]) => void
+  onUpload: (video: Video) => void
   onDelete: (id: number) => void
   onGoLive: (title: string, stream: MediaStream) => void
 }
 
 export default function HomePage({ videos, isLive, onUpload, onDelete, onGoLive }: HomePageProps) {
-  const fileInputRef = useRef<HTMLInputElement>(null)
-  const [showModal, setShowModal] = useState(false)
+  const [showGoLiveModal, setShowGoLiveModal] = useState(false)
+  const [showUploadModal, setShowUploadModal] = useState(false)
   const navigate = useNavigate()
 
-  function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
-    const files = Array.from(e.target.files ?? [])
-    const newVideos: Video[] = files.map((file, i) => ({
-      id: Date.now() + i,
-      name: file.name.replace(/\.[^.]+$/, ''),
-      size: formatBytes(file.size),
-      uploadedAt: new Date().toLocaleString(),
-      url: URL.createObjectURL(file),
-      author: 'You',
-    }))
-    onUpload(newVideos)
-    e.target.value = ''
-  }
-
   function handleGoLiveStart(title: string, stream: MediaStream) {
-    setShowModal(false)
+    setShowGoLiveModal(false)
     onGoLive(title, stream)
     navigate('/live')
+  }
+
+  function handleUploadVideo(video: Video) {
+    onUpload(video)
+    setShowUploadModal(false)
   }
 
   return (
     <div className="min-h-screen bg-red-50 text-gray-900">
       <Header
-        onUploadClick={() => fileInputRef.current?.click()}
-        onGoLiveClick={() => setShowModal(true)}
+        onUpload={handleUploadVideo}
+        onGoLiveClick={() => setShowGoLiveModal(true)}
         isLive={isLive}
-        uploadInput={
-          <input
-            ref={fileInputRef}
-            type="file"
-            accept="video/*"
-            multiple
-            className="hidden"
-            onChange={handleFileChange}
-          />
-        }
       />
 
       <main className="max-w-4xl mx-auto px-6 py-10">
@@ -70,7 +47,7 @@ export default function HomePage({ videos, isLive, onUpload, onDelete, onGoLive 
 
         {videos.length === 0 ? (
           <button
-            onClick={() => fileInputRef.current?.click()}
+            onClick={() => setShowUploadModal(true)}
             className="w-full border-2 border-dashed border-red-200 rounded-xl py-16 flex flex-col items-center gap-3 text-red-300 hover:border-red-400 hover:text-red-500 transition-colors"
           >
             <UploadEmptyIcon />
@@ -83,19 +60,21 @@ export default function HomePage({ videos, isLive, onUpload, onDelete, onGoLive 
                 key={video.id}
                 className="bg-white border border-red-100 rounded-xl p-4 flex items-center gap-4 shadow-sm"
               >
-                <Link
-                  to={`/watch/${video.id}`}
-                  className="w-24 h-14 rounded-lg bg-red-50 flex-shrink-0 overflow-hidden block hover:opacity-90 transition-opacity"
-                >
-                  <video src={video.url} className="w-full h-full object-cover" muted />
-                </Link>
+                {video.url && (
+                  <Link
+                    to={`/watch/${video.id}`}
+                    className="w-24 h-14 rounded-lg bg-red-50 flex-shrink-0 overflow-hidden block hover:opacity-90 transition-opacity"
+                  >
+                    <video src={video.url} className="w-full h-full object-cover" muted />
+                  </Link>
+                )}
 
                 <div className="flex-1 min-w-0">
                   <Link
                     to={`/watch/${video.id}`}
                     className="font-medium text-sm truncate block hover:text-red-600 transition-colors"
                   >
-                    {video.name}
+                    {video.title}
                   </Link>
                   <p className="text-xs text-gray-400 mt-0.5">
                     {video.author} · {video.size} · {video.uploadedAt}
@@ -108,7 +87,7 @@ export default function HomePage({ videos, isLive, onUpload, onDelete, onGoLive 
                   </Link>
                   <button
                     onClick={() => onDelete(video.id)}
-                    aria-label={`Delete ${video.name}`}
+                    aria-label={`Delete ${video.title}`}
                     className="p-1.5 rounded-lg text-gray-400 hover:text-red-600 hover:bg-red-50 transition-colors"
                   >
                     <TrashIcon />
@@ -120,8 +99,12 @@ export default function HomePage({ videos, isLive, onUpload, onDelete, onGoLive 
         )}
       </main>
 
-      {showModal && (
-        <GoLiveModal onStart={handleGoLiveStart} onClose={() => setShowModal(false)} />
+      {showGoLiveModal && (
+        <GoLiveModal onStart={handleGoLiveStart} onClose={() => setShowGoLiveModal(false)} />
+      )}
+
+      {showUploadModal && (
+        <UploadVideoModal onUpload={handleUploadVideo} onClose={() => setShowUploadModal(false)} />
       )}
     </div>
   )

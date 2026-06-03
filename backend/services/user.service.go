@@ -1,11 +1,18 @@
 package services
 
 import (
+	"backend/dtos"
 	"backend/models"
 	"backend/repositories"
-	"backend/dtos"
+	"fmt"
+	"os"
+	"time"
+
+	"github.com/golang-jwt/jwt/v5"
+	"golang.org/x/crypto/bcrypt"
 	"gorm.io/gorm"
 )
+
 
 type UserService struct {
 	repo *repositories.UserRepo
@@ -16,15 +23,19 @@ func NewUserService(repo *repositories.UserRepo) *UserService {
 }
 
 
-func (userService *UserService) CreateUser(userDTO *dtos.UserDTO) error {
+func (userService *UserService) CreateUser(userDTO *dtos.UserDTO) (error, string) {
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(userDTO.Password), 10)
+	if err != nil {
+		return err, "Failed to hash password"
+	}
 	user := &models.User{
 		Surname: userDTO.Surname,
 		Name:    userDTO.Name,
 		Email:   userDTO.Email,
-		Password: userDTO.Password,
+		Password: string(hashedPassword),
 	}
 
-	return userService.repo.CreateUser(user)
+	return userService.repo.CreateUser(user), "User created successfully"
 }
 
 func (userService *UserService) GetUserByID(id uint) (*dtos.UserDTO, error) {
@@ -72,4 +83,38 @@ func (userService *UserService) GetAllUsers() ([]dtos.UserDTO, error) {
 		}
 	}
 	return userDTOs, nil
+}
+
+func createToken(username string) (string, error) {
+    token := jwt.NewWithClaims(jwt.SigningMethodHS256, 
+        jwt.MapClaims{ 
+        "username": username, 
+        "exp": time.Now().Add(time.Hour * 24).Unix(), 
+        })
+
+    tokenString, err := token.SignedString([]byte(os.Getenv("JWT_SECRET")))
+    if err != nil {
+    return "", err
+    }
+
+ return tokenString, nil
+}
+
+
+
+func (userService *UserService) AuthenticateUser(email, password string) (error, string) {
+
+	user, err := userService.repo.GetUserByEmail(email)
+	if err != nil {
+		return fmt.Errorf("user not found"), ""
+	}
+	err = bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(password))
+	if err != nil {
+		return fmt.Errorf("invalid password"), ""
+	}
+	token, err := createToken(user.Email)
+	if err != nil {
+		return fmt.Errorf("failed to create token"), ""
+	}
+	return nil, token
 }

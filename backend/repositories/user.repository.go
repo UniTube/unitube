@@ -29,6 +29,14 @@ func (r *UserRepo) GetUserByID(id uint) (*models.User, error) {
 	return &user, nil
 }
 
+func (r *UserRepo) GetUserByEmail(email string) (*models.User, error) {
+	var user models.User
+	if err := r.Db.First(&user, "email = ?", email).Error; err != nil {
+		return nil, err
+	}
+	return &user, nil
+}
+
 func (r *UserRepo) UpdateUser(user *models.User) error {
 	if err := r.Db.Save(user).Error; err != nil {
 		return err

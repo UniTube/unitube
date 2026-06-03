@@ -3,6 +3,7 @@ import { Routes, Route } from 'react-router-dom'
 import HomePage from './pages/HomePage'
 import VideoPage from './pages/VideoPage'
 import LivePage from './pages/LivePage'
+import LoginPage from './pages/LoginPage'
 import { Video } from './types'
 
 export default function App() {
@@ -35,6 +36,7 @@ export default function App() {
 
   return (
     <Routes>
+      <Route path="/login" element={<LoginPage />} />
       <Route
         path="/"
         element={

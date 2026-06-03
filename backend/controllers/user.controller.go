@@ -34,8 +34,8 @@ func (c *UserController) CreateUser(ctx *gin.Context) {
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-	if err := c.userService.CreateUser(&userDTO); err != nil {
-		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+	if err, message := c.userService.CreateUser(&userDTO); err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error(), "message": message})
 		return
 	}
 	ctx.JSON(http.StatusCreated, userDTO)
@@ -133,3 +133,27 @@ func (c *UserController) GetAllUsers(ctx *gin.Context) {
 	}
 	ctx.JSON(http.StatusOK, userDTOs)
 }
+
+func (c *UserController) LoginUser(ctx *gin.Context) {
+	var loginDTO dtos.LoginDTO
+	if err := ctx.ShouldBindJSON(&loginDTO); err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	if err, token := c.userService.AuthenticateUser(loginDTO.Email, loginDTO.Password); err != nil {
+		ctx.JSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
+		return
+	} else {
+		ctx.setSameSite(http.SameSiteLaxMode)
+		ctx.SetCookie("Authorization", token, 3600*24, "", "", false, true)
+		ctx.JSON(http.StatusOK, gin.H{"token": token})
+	}
+}
+
+func (c *UserController) LogoutUser(ctx *gin.Context) {
+	ctx.SetCookie("Authorization", "", -1, "", "", false, true)
+	ctx.JSON(http.StatusOK, gin.H{"message": "Logged out successfully"})
+}
+
+
