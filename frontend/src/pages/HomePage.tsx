@@ -57,7 +57,7 @@ export default function HomePage({ isLive, onUpload, onDelete, onGoLive }: HomeP
   }
 
   return (
-    <div className="min-h-screen bg-white text-gray-900">
+    <div className="min-h-screen bg-red-50 dark:bg-zinc-950 text-gray-900 dark:text-zinc-100">
       <Header
         onUpload={handleUploadVideo}
         onGoLiveClick={() => setShowGoLiveModal(true)}
