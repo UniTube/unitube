@@ -34,8 +34,8 @@ func (c *UserController) CreateUser(ctx *gin.Context) {
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-	if err := c.userService.CreateUser(&userDTO); err != nil {
-		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+	if err, message := c.userService.CreateUser(&userDTO); err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error(), "message": message})
 		return
 	}
 	ctx.JSON(http.StatusCreated, userDTO)
@@ -133,3 +133,40 @@ func (c *UserController) GetAllUsers(ctx *gin.Context) {
 	}
 	ctx.JSON(http.StatusOK, userDTOs)
 }
+
+// LoginUser godoc
+// @Summary Authenticate a user and generate a JWT token
+// @Description Authenticate user credentials and return a JWT token for authorized access
+// @Tags users
+// @Accept json
+// @Produce json
+// @Param credentials body dtos.LoginDTO true "User login credentials"
+// @Success 200 {object} dtos.LoginResponse
+// @Failure 400 {object} map[string]string
+// @Failure 401 {object} map[string]string
+// @Failure 500 {object} map[string]string
+// @Router /login [post]
+
+func (c *UserController) LoginUser(ctx *gin.Context) {
+	var loginDTO dtos.LoginDTO
+	if err := ctx.ShouldBindJSON(&loginDTO); err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	if err, loginResponse := c.userService.AuthenticateUser(loginDTO.Email, loginDTO.Password); err != nil {
+		ctx.JSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
+		return
+	} else {
+		ctx.SetSameSite(http.SameSiteLaxMode)
+		ctx.SetCookie("Authorization", loginResponse.Token, 3600*24, "", "", false, true)
+		ctx.JSON(http.StatusOK, loginResponse)
+	}
+}
+
+func (c *UserController) LogoutUser(ctx *gin.Context) {
+	ctx.SetCookie("Authorization", "", -1, "", "", false, true)
+	ctx.JSON(http.StatusOK, gin.H{"message": "Logged out successfully"})
+}
+
+

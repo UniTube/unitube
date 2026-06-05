@@ -1,8 +1,27 @@
 export interface Video {
   id: number
-  name: string
+  title: string
   size: string
   uploadedAt: string
-  url: string
+  description: string
   author: string
+  url?: string
+}
+
+export interface User {
+  id: number | null
+  email: string
+  name: string
+  surname: string
+  password: string
+}
+
+export interface LoginRequest {
+  email: string
+  password: string
+}
+
+export interface LoginResponse {
+  token: string
+  user: User
 }

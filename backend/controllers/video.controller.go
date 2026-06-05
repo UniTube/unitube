@@ -4,6 +4,7 @@ import (
 	"backend/dtos"
 	"backend/services"
 	"fmt"
+	"mime/multipart"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -43,15 +44,8 @@ func (c *VideoController) CreateVideo(ctx *gin.Context) {
 		return
 	}
 
-	// Chemin absolu basé sur le répertoire de travail réel
-	workDir, err := os.Getwd()
-	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to get working directory"})
-		return
-	}
-
-	// Remonte à la racine du projet (backend/) puis va dans storages/
-	storageDir := filepath.Join(workDir, "..", "storages")
+	// Use the Docker volume mount path directly
+	storageDir := "/storages"
 
 	if err := os.MkdirAll(storageDir, os.ModePerm); err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create storage directory"})
@@ -72,65 +66,163 @@ func (c *VideoController) CreateVideo(ctx *gin.Context) {
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to save file"})
 		return
 	}
-
+	mimeType, err := c.detectMimeType(file)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to detect MIME type"})
+		return
+	}
 	authorId, _ := strconv.Atoi(ctx.PostForm("authorId"))
 	videoDTO := dtos.VideoDTO{
 		Title:       ctx.PostForm("title"),
 		Description: ctx.PostForm("description"),
+		Size:        file.Size,
 		URL:         dst,
+		MimeType:   mimeType,
 		UploadAt:    time.Now().String(),
 		AuthorID:    uint(authorId),
 	}
 
-	if err := c.videoService.CreateVideo(&videoDTO); err != nil {
+	response, err := c.videoService.CreateVideo(&videoDTO)
+	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 
-	ctx.JSON(http.StatusCreated, videoDTO)
+	ctx.JSON(http.StatusCreated, response)
 }
 
-// func (c *VideoController) GetVideoByID(ctx *gin.Context) {
-// 	idParam := ctx.Param("id")
-// 	var id uint
-// 	if _, err := fmt.Sscanf(idParam, "%d", &id); err != nil {
-// 		ctx.JSON(http.StatusBadRequest, gin.H{"error": "Invalid video ID"})
-// 		return
-// 	}
-// 	videoDTO, err := c.videoService.GetVideoByID(id)
-// 	if err != nil {
-// 		ctx.JSON(http.StatusNotFound, gin.H{"error": "Video not found"})
-// 		return
-// 	}
-// 	ctx.JSON(http.StatusOK, videoDTO)
-// }
 
-// func (c *VideoController) UpdateVideo(ctx *gin.Context) {
-// 	var videoDTO dtos.VideoDTO
-// 	if err := ctx.ShouldBindJSON(&videoDTO); err != nil {
-// 		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-// 		return
-// 	}
-// 	if err := c.videoService.UpdateVideo(&videoDTO); err != nil {
-// 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-// 		return
-// 	}
-// 	ctx.JSON(http.StatusOK, videoDTO)
-// }
+// GetVideoMetadata godoc
+// @Summary Get video metadata by ID
+// @Description Retrieve video metadata as JSON
+// @Tags videos
+// @Produce json
+// @Param id path integer true "Video ID"
+// @Success 200 {object} dtos.VideoResponseDTO
+// @Failure 400 {object} map[string]string
+// @Failure 404 {object} map[string]string
+// @Router /videos/{id}/metadata [get]
+func (c *VideoController) GetVideoMetadata(ctx *gin.Context) {
+	idParam := ctx.Param("id")
+	var id uint
+	if _, err := fmt.Sscanf(idParam, "%d", &id); err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": "Invalid video ID"})
+		return
+	}
 
-// func (c *VideoController) DeleteVideo(ctx *gin.Context){
-// 	idParam := ctx.Param("id")
-// 	var id uint
-// 	if _, err := fmt.Sscanf(idParam, "%d", &id); err != nil {
-// 		ctx.JSON(http.StatusBadRequest, gin.H{"error": "Invalid video ID"})
-// 		return
-// 	}
-// 	if err := c.videoService.DeleteVideo(id); err != nil {
-// 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-// 		return
-// 	}
-// 	ctx.JSON(http.StatusOK, gin.H{"message": "Video deleted successfully"})
-// }
+	video, err := c.videoService.GetVideoByID(id)
+	if err != nil {
+		ctx.JSON(http.StatusNotFound, gin.H{"error": "Video not found"})
+		return
+	}
+
+	ctx.JSON(http.StatusOK, c.videoService.ToVideoResponse(video))
+}
+
+
+// GetVideoByID godoc
+// @Summary Stream a video by ID
+// @Description Stream video content using HTTP Range requests (partial content)
+// @Tags videos
+// @Produce application/octet-stream
+// @Param id path integer true "Video ID"
+// @Success 206 {file} binary "Partial video content"
+// @Success 200 {file} binary "Full video content"
+// @Failure 400 {object} map[string]string
+// @Failure 404 {object} map[string]string
+// @Failure 416 {object} map[string]string "Range not satisfiable"
+// @Failure 500 {object} map[string]string
+// @Router /videos/{id} [get]
+func (c *VideoController) GetVideoByID(ctx *gin.Context) {
+	idParam := ctx.Param("id")
+	var id uint
+	if _, err := fmt.Sscanf(idParam, "%d", &id); err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": "Invalid video ID"})
+		return
+	}
+ 
+	// Fetch video metadata from DB
+	videoDTO, err := c.videoService.GetVideoByID(id)
+	if err != nil {
+		ctx.JSON(http.StatusNotFound, gin.H{"error": "Video not found"})
+		return
+	}
+ 
+	// Open the video file from disk
+	file, err := os.Open(videoDTO.URL)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to open video file"})
+		return
+	}
+	defer file.Close()
+ 
+	// Get file size for Range calculations
+	info, err := file.Stat()
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to read file info"})
+		return
+	}
+	fileSize := info.Size()
+ 
+	// Set headers that tell the client streaming is supported
+	ctx.Header("Accept-Ranges", "bytes")
+	ctx.Header("Content-Type", videoDTO.MimeType)
+ 
+	rangeHeader := ctx.GetHeader("Range")
+ 
+	// No Range header → serve the full file
+	if rangeHeader == "" {
+		ctx.Header("Content-Length", strconv.FormatInt(fileSize, 10))
+		ctx.Status(http.StatusOK)
+		http.ServeContent(ctx.Writer, ctx.Request, info.Name(), info.ModTime(), file)
+		return
+	}
+ 
+	// Parse "bytes=start-end" from the Range header
+	var start, end int64
+	_, err = fmt.Sscanf(rangeHeader, "bytes=%d-%d", &start, &end)
+ 
+	if err != nil {
+		// "bytes=start-" means "from start to EOF"
+		_, err = fmt.Sscanf(rangeHeader, "bytes=%d-", &start)
+		if err != nil {
+			ctx.JSON(http.StatusRequestedRangeNotSatisfiable, gin.H{"error": "Invalid Range header"})
+			return
+		}
+		end = fileSize - 1
+	}
+ 
+	// Validate range bounds
+	if start < 0 || end >= fileSize || start > end {
+		ctx.Header("Content-Range", fmt.Sprintf("bytes */%d", fileSize))
+		ctx.JSON(http.StatusRequestedRangeNotSatisfiable, gin.H{"error": "Range out of bounds"})
+		return
+	}
+ 
+	chunkSize := end - start + 1
+ 
+	// Seek to the requested start position
+	if _, err := file.Seek(start, 0); err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to seek in file"})
+		return
+	}
+ 
+	// Read exactly the requested chunk
+	buf := make([]byte, chunkSize)
+	if _, err := file.Read(buf); err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to read video chunk"})
+		return
+	}
+ 
+	// Respond with 206 Partial Content and the chunk
+	ctx.Header("Content-Range", fmt.Sprintf("bytes %d-%d/%d", start, end, fileSize))
+	ctx.Header("Content-Length", strconv.FormatInt(chunkSize, 10))
+	ctx.Data(http.StatusPartialContent, videoDTO.MimeType, buf)
+}
+
+
+
+
 
 // GetAllVideos godoc
 // @Summary Get all videos
@@ -148,4 +240,21 @@ func (c *VideoController) GetAllVideos(ctx *gin.Context) {
 		return
 	}
 	ctx.JSON(http.StatusOK, videoDTOs)
+}
+// detectMimeType reads the file header to detect the actual MIME type
+func (v *VideoController) detectMimeType(file *multipart.FileHeader) (string, error) {
+    src, err := file.Open()
+    if err != nil {
+        return "", err
+    }
+    defer src.Close()
+
+    // Read first 512 bytes for MIME detection
+    buffer := make([]byte, 512)
+    _, err = src.Read(buffer)
+    if err != nil {
+        return "", err
+    }
+
+    return http.DetectContentType(buffer), nil
 }

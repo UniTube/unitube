@@ -1,15 +1,27 @@
-import { Link } from 'react-router-dom'
+import { useState } from 'react'
+import { Link, useNavigate } from 'react-router-dom'
 import { useTheme } from '../context/ThemeContext'
+import UploadVideoModal from './UploadVideoModal'
+import authService from '../services/authService'
+import { Video } from '../types'
 
 interface HeaderProps {
-  onUploadClick?: () => void
+  onUpload?: (video: Video) => void
   onGoLiveClick?: () => void
   isLive?: boolean
-  uploadInput?: React.ReactNode
 }
 
-export default function Header({ onUploadClick, onGoLiveClick, isLive, uploadInput }: HeaderProps) {
+export default function Header({ onUpload, onGoLiveClick, isLive }: HeaderProps) {
   const { theme, toggle } = useTheme()
+
+  const [showUploadModal, setShowUploadModal] = useState(false)
+  const navigate = useNavigate()
+  const isAuthenticated = authService.isAuthenticated()
+
+  function handleLogout() {
+    authService.removeToken()
+    navigate('/login')
+  }
 
   return (
     <header className="bg-white dark:bg-zinc-900 border-b border-red-100 dark:border-zinc-800 px-6 py-4 flex items-center justify-between shadow-sm">
@@ -30,38 +42,71 @@ export default function Header({ onUploadClick, onGoLiveClick, isLive, uploadInp
           {theme === 'dark' ? <SunIcon /> : <MoonIcon />}
         </button>
 
-        {onUploadClick && (
-          <>
-            <button
-              onClick={onUploadClick}
-              className="flex items-center gap-2 bg-red-600 hover:bg-red-700 active:bg-red-800 text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors"
-            >
-              <UploadIcon />
-              Upload video
-            </button>
-            {uploadInput}
+        <div className="flex items-center gap-3">
+          {(onUpload || onGoLiveClick) && isAuthenticated && (
+            <>
+              {onUpload && (
+                <button
+                  onClick={() => setShowUploadModal(true)}
+                  className="flex items-center gap-2 bg-red-600 hover:bg-red-700 active:bg-red-800 text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors"
+                >
+                  <UploadIcon />
+                  Upload video
+                </button>
+              )}
 
-            {isLive ? (
-              <Link
-                to="/live"
-                className="flex items-center gap-2 bg-red-600 text-white text-sm font-medium px-4 py-2 rounded-lg"
-              >
-                <span className="inline-block w-2 h-2 rounded-full bg-white animate-pulse" />
-                You are live
-              </Link>
-            ) : (
-              <button
-                onClick={onGoLiveClick}
-                className="flex items-center gap-2 bg-white dark:bg-zinc-800 hover:bg-red-50 dark:hover:bg-zinc-700 text-red-600 dark:text-red-400 border border-red-200 dark:border-zinc-700 text-sm font-medium px-4 py-2 rounded-lg transition-colors"
-              >
-                <span className="inline-block w-2 h-2 rounded-full bg-red-500" />
-                Go live
-              </button>
+                {isLive ? (
+                      <Link
+                    to="/live"
+                    className="flex items-center gap-2 bg-red-600 text-white text-sm font-medium px-4 py-2 rounded-lg"
+                  >
+                    <span className="inline-block w-2 h-2 rounded-full bg-white animate-pulse" />
+                    You are live
+                  </Link>
+                ) : (
+                onGoLiveClick && (
+                    <button
+                      onClick={onGoLiveClick}
+                      className="flex items-center gap-2 bg-white dark:bg-zinc-800 hover:bg-red-50 dark:hover:bg-zinc-700 text-red-600 dark:text-red-400 border border-red-200 dark:border-zinc-700 text-sm font-medium px-4 py-2 rounded-lg transition-colors"
+                    >
+                      <span className="inline-block w-2 h-2 rounded-full bg-red-500" />
+                      Go live
+                    </button>
+                )
+              )}
+              {isAuthenticated && (
+                <button
+                  onClick={handleLogout}
+                  className="text-gray-600 hover:text-red-600 text-sm font-medium px-3 py-2 rounded-lg transition-colors"
+                >
+                  Logout
+                </button>
+              )}
+            </>
+          )}
+
+          {!isAuthenticated && (
+            <Link
+              to="/login"
+              className="text-red-600 hover:text-red-700 text-sm font-medium px-3 py-2 rounded-lg transition-colors"
+            >
+              Sign In
+            </Link>
             )}
           </>
         )}
       </div>
-    </header>
+      </header>
+
+      {showUploadModal && onUpload && (
+        <UploadVideoModal
+          onUpload={(video) => {
+            onUpload(video)
+            setShowUploadModal(false)
+          }}
+          onClose={() => setShowUploadModal(false)}
+        />
+    </>
   )
 }
 

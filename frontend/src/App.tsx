@@ -1,9 +1,11 @@
 import { useState } from 'react'
 import { Routes, Route } from 'react-router-dom'
 import HomePage from './pages/HomePage'
-import VideoPage from './pages/VideoPage'
+import WatchVideoPage from './pages/WatchVideoPage'
 import LivePage from './pages/LivePage'
+import LoginPage from './pages/LoginPage'
 import { Video } from './types'
+import RegisterPage from './pages/RegisterPage'
 
 export default function App() {
   const [videos, setVideos] = useState<Video[]>([])
@@ -15,11 +17,7 @@ export default function App() {
   }
 
   function handleDelete(id: number) {
-    setVideos((prev) => {
-      const removed = prev.find((v) => v.id === id)
-      if (removed) URL.revokeObjectURL(removed.url)
-      return prev.filter((v) => v.id !== id)
-    })
+    setVideos((prev) => prev.filter((v) => v.id !== id))
   }
 
   function handleGoLive(title: string, mediaStream: MediaStream) {
@@ -35,11 +33,11 @@ export default function App() {
 
   return (
     <Routes>
+      <Route path="/login" element={<LoginPage />} />
       <Route
         path="/"
         element={
           <HomePage
-            videos={videos}
             isLive={!!stream}
             onUpload={handleUpload}
             onDelete={handleDelete}
@@ -47,11 +45,12 @@ export default function App() {
           />
         }
       />
-      <Route path="/watch/:id" element={<VideoPage videos={videos} />} />
+      <Route path="/watch/:id" element={<WatchVideoPage />} />
       <Route
         path="/live"
         element={<LivePage stream={stream} title={liveTitle} onEnd={handleEndStream} />}
       />
+      <Route path="/register" element={<RegisterPage />} />
     </Routes>
   )
 }
