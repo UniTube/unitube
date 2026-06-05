@@ -134,6 +134,19 @@ func (c *UserController) GetAllUsers(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, userDTOs)
 }
 
+// LoginUser godoc
+// @Summary Authenticate a user and generate a JWT token
+// @Description Authenticate user credentials and return a JWT token for authorized access
+// @Tags users
+// @Accept json
+// @Produce json
+// @Param credentials body dtos.LoginDTO true "User login credentials"
+// @Success 200 {object} dtos.LoginResponse
+// @Failure 400 {object} map[string]string
+// @Failure 401 {object} map[string]string
+// @Failure 500 {object} map[string]string
+// @Router /login [post]
+
 func (c *UserController) LoginUser(ctx *gin.Context) {
 	var loginDTO dtos.LoginDTO
 	if err := ctx.ShouldBindJSON(&loginDTO); err != nil {
@@ -141,13 +154,13 @@ func (c *UserController) LoginUser(ctx *gin.Context) {
 		return
 	}
 
-	if err, token := c.userService.AuthenticateUser(loginDTO.Email, loginDTO.Password); err != nil {
+	if err, loginResponse := c.userService.AuthenticateUser(loginDTO.Email, loginDTO.Password); err != nil {
 		ctx.JSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
 		return
 	} else {
-		ctx.setSameSite(http.SameSiteLaxMode)
-		ctx.SetCookie("Authorization", token, 3600*24, "", "", false, true)
-		ctx.JSON(http.StatusOK, gin.H{"token": token})
+		ctx.SetSameSite(http.SameSiteLaxMode)
+		ctx.SetCookie("Authorization", loginResponse.Token, 3600*24, "", "", false, true)
+		ctx.JSON(http.StatusOK, loginResponse)
 	}
 }
 

@@ -102,19 +102,25 @@ func createToken(username string) (string, error) {
 
 
 
-func (userService *UserService) AuthenticateUser(email, password string) (error, string) {
+func (userService *UserService) AuthenticateUser(email, password string) (error, dtos.LoginResponse) {
 
 	user, err := userService.repo.GetUserByEmail(email)
 	if err != nil {
-		return fmt.Errorf("user not found"), ""
+		return fmt.Errorf("user not found"), dtos.LoginResponse{}
 	}
 	err = bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(password))
 	if err != nil {
-		return fmt.Errorf("invalid password"), ""
+		return fmt.Errorf("invalid password"), dtos.LoginResponse{}
 	}
 	token, err := createToken(user.Email)
 	if err != nil {
-		return fmt.Errorf("failed to create token"), ""
+		return fmt.Errorf("failed to create token"), dtos.LoginResponse{}
 	}
-	return nil, token
+	fmt.Println(user)
+	return nil, dtos.LoginResponse{Token: token, User: dtos.UserDTO{
+		ID:      user.ID,
+		Name:    user.Name,
+		Surname: user.Surname,
+		Email:   user.Email,
+	}}
 }

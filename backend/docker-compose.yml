@@ -11,6 +11,9 @@ services:
       DB_USER: user
       DB_PASSWORD: password
       DB_NAME: unitube
+      JWT_SECRET: unitube-secret-key
+    volumes:
+      - videos_storage:/storages
   postgres:
     image: postgres:17-alpine
     environment:
@@ -19,3 +22,6 @@ services:
       POSTGRES_DB: unitube
     ports:
       - "5432:5432"
+
+volumes:
+  videos_storage:

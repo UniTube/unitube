@@ -8,10 +8,10 @@ import (
 )
 
 func SetupUserRoutes(router *gin.RouterGroup, controller *controllers.UserController) {
-	router.POST("/users", middlewares.RequireAuth, controller.CreateUser)
+	router.POST("/users", controller.CreateUser)
 	router.GET("/users", middlewares.RequireAuth, controller.GetAllUsers)
 	router.GET("/users/:id", middlewares.RequireAuth, controller.GetUserByID)
 	router.PUT("/users/:id", middlewares.RequireAuth, controller.UpdateUser)
 	router.DELETE("/users/:id", middlewares.RequireAuth, controller.DeleteUser)
-	router.POST("/login", controller.Login)
+	router.POST("/login", controller.LoginUser)
 }

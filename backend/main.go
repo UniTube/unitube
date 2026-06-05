@@ -22,7 +22,13 @@ func main() {
 	videoService := services.NewVideoService(repositories.NewVideoRepo(db))
 	videoController := controllers.NewVideoController(videoService)
 	router := gin.Default()
-	router.Use(cors.Default())
+	router.Use(cors.New(cors.Config{
+		AllowOrigins:     []string{"http://localhost:3000", "http://localhost:5173", "*"},
+		AllowMethods:     []string{"GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"},
+		AllowHeaders:     []string{"Content-Type", "Authorization"},
+		ExposeHeaders:    []string{"Content-Length"},
+		AllowCredentials: true,
+	}))
 	// Configure CORS
 	// c := cors.New(cors.Options{
 	// 	AllowedOrigins:   []string{"http://localhost:3000", "http://localhost:5173", "*"},

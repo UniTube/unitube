@@ -44,15 +44,8 @@ func (c *VideoController) CreateVideo(ctx *gin.Context) {
 		return
 	}
 
-	// Chemin absolu basé sur le répertoire de travail réel
-	workDir, err := os.Getwd()
-	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to get working directory"})
-		return
-	}
-
-	// Remonte à la racine du projet (backend/) puis va dans storages/
-	storageDir := filepath.Join(workDir, "..", "storages")
+	// Use the Docker volume mount path directly
+	storageDir := "/storages"
 
 	if err := os.MkdirAll(storageDir, os.ModePerm); err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create storage directory"})
@@ -82,18 +75,48 @@ func (c *VideoController) CreateVideo(ctx *gin.Context) {
 	videoDTO := dtos.VideoDTO{
 		Title:       ctx.PostForm("title"),
 		Description: ctx.PostForm("description"),
+		Size:        file.Size,
 		URL:         dst,
 		MimeType:   mimeType,
 		UploadAt:    time.Now().String(),
 		AuthorID:    uint(authorId),
 	}
 
-	if err := c.videoService.CreateVideo(&videoDTO); err != nil {
+	response, err := c.videoService.CreateVideo(&videoDTO)
+	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 
-	ctx.JSON(http.StatusCreated, videoDTO)
+	ctx.JSON(http.StatusCreated, response)
+}
+
+
+// GetVideoMetadata godoc
+// @Summary Get video metadata by ID
+// @Description Retrieve video metadata as JSON
+// @Tags videos
+// @Produce json
+// @Param id path integer true "Video ID"
+// @Success 200 {object} dtos.VideoResponseDTO
+// @Failure 400 {object} map[string]string
+// @Failure 404 {object} map[string]string
+// @Router /videos/{id}/metadata [get]
+func (c *VideoController) GetVideoMetadata(ctx *gin.Context) {
+	idParam := ctx.Param("id")
+	var id uint
+	if _, err := fmt.Sscanf(idParam, "%d", &id); err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": "Invalid video ID"})
+		return
+	}
+
+	video, err := c.videoService.GetVideoByID(id)
+	if err != nil {
+		ctx.JSON(http.StatusNotFound, gin.H{"error": "Video not found"})
+		return
+	}
+
+	ctx.JSON(http.StatusOK, c.videoService.ToVideoResponse(video))
 }
 
 

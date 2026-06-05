@@ -13,11 +13,13 @@ interface HeaderProps {
 export default function Header({ onUpload, onGoLiveClick, isLive }: HeaderProps) {
   const [showUploadModal, setShowUploadModal] = useState(false)
   const navigate = useNavigate()
+  const isAuthenticated = authService.isAuthenticated()
 
   function handleLogout() {
     authService.removeToken()
     navigate('/login')
   }
+
   return (
     <>
       <header className="bg-white border-b border-red-100 px-6 py-4 flex items-center justify-between shadow-sm">
@@ -29,7 +31,7 @@ export default function Header({ onUpload, onGoLiveClick, isLive }: HeaderProps)
         </Link>
 
         <div className="flex items-center gap-3">
-          {(onUpload || onGoLiveClick) && (
+          {(onUpload || onGoLiveClick) && isAuthenticated && (
             <>
               {onUpload && (
                 <button
@@ -61,22 +63,25 @@ export default function Header({ onUpload, onGoLiveClick, isLive }: HeaderProps)
                   </button>
                 )
               )}
-
-              <button
-                onClick={handleLogout}
-                className="text-gray-600 hover:text-red-600 text-sm font-medium px-3 py-2 rounded-lg transition-colors"
-              >
-                Logout
-              </button>
+              {isAuthenticated && (
+                <button
+                  onClick={handleLogout}
+                  className="text-gray-600 hover:text-red-600 text-sm font-medium px-3 py-2 rounded-lg transition-colors"
+                >
+                  Logout
+                </button>
+              )}
             </>
           )}
 
-          <Link
-            to="/login"
-            className="text-red-600 hover:text-red-700 text-sm font-medium px-3 py-2 rounded-lg transition-colors"
-          >
-            Sign In
-          </Link>
+          {!isAuthenticated && (
+            <Link
+              to="/login"
+              className="text-red-600 hover:text-red-700 text-sm font-medium px-3 py-2 rounded-lg transition-colors"
+            >
+              Sign In
+            </Link>
+          )}
         </div>
       </header>
 

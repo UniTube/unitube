@@ -9,6 +9,7 @@ import (
 
 func SetupVideoRoutes(router *gin.RouterGroup, controller *controllers.VideoController) {
 	router.POST("/videos", middlewares.RequireAuth, controller.CreateVideo)
-	router.GET("/videos", middlewares.RequireAuth, controller.GetAllVideos)
-	router.GET("/videos/:id", middlewares.RequireAuth, controller.GetVideoByID)
+	router.GET("/videos", controller.GetAllVideos)
+	router.GET("/videos/:id/metadata", controller.GetVideoMetadata)
+	router.GET("/videos/:id", controller.GetVideoByID)
 }

@@ -3,6 +3,7 @@ package middlewares
 import (
 	"fmt"
 	"os"
+	"strings"
 	"time"
 
 	"net/http"
@@ -12,13 +13,19 @@ import (
 )
 
 func RequireAuth(ctx *gin.Context) {
-	authHeader := ctx.Cookie("Authorization")
-	if authHeader == "" {
-		ctx.JSON(401, gin.H{"error": "Authorization header is required"})
+	token, _ := ctx.Cookie("Authorization")
+	if token == "" {
+		authHeader := ctx.GetHeader("Authorization")
+		if strings.HasPrefix(authHeader, "Bearer ") {
+			token = strings.TrimPrefix(authHeader, "Bearer ")
+		}
+	}
+	if token == "" {
+		ctx.JSON(401, gin.H{"error": "Authorization is required"})
 		ctx.Abort()
 		return
 	}
-	if err := verifyToken(authHeader); err != nil {
+	if err := verifyToken(token); err != nil {
 		ctx.JSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
 		return
 	}
