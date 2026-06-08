@@ -26,7 +26,7 @@ export default function VideoCard({ video, onDelete }: VideoCardProps) {
     <div className="group flex flex-col cursor-pointer transition-transform duration-200 hover:scale-105 relative">
       <Link
         to={`/watch/${video.id}`}
-        className="relative w-full aspect-video bg-gray-900 rounded-lg overflow-hidden mb-3 flex items-center justify-center hover:no-underline"
+        className="relative w-full aspect-video bg-zinc-900 rounded-lg overflow-hidden mb-3 flex items-center justify-center hover:no-underline"
       >
         {video.url ? (
           <video
@@ -38,7 +38,7 @@ export default function VideoCard({ video, onDelete }: VideoCardProps) {
           />
         ) : (
           <div className="flex items-center justify-center w-full h-full">
-            <svg className="w-12 h-12 text-gray-700" fill="currentColor" viewBox="0 0 20 20">
+            <svg className="w-12 h-12 text-zinc-600" fill="currentColor" viewBox="0 0 20 20">
               <path d="M2 6a2 2 0 012-2h12a2 2 0 012 2v8a2 2 0 01-2 2H4a2 2 0 01-2-2V6zM14.553 7.106A1 1 0 0014 8v4a1 1 0 00.553.894l2 1A1 1 0 0018 13V7a1 1 0 00-1.447-.894l-2 1z" />
             </svg>
           </div>
@@ -62,11 +62,11 @@ export default function VideoCard({ video, onDelete }: VideoCardProps) {
 
       {/* Video Information */}
       <Link to={`/watch/${video.id}`} className="flex-1 min-w-0 hover:no-underline">
-        <h3 className="font-medium text-sm text-gray-900 line-clamp-2 group-hover:text-red-600 transition-colors">
+        <h3 className="font-medium text-sm text-gray-900 dark:text-zinc-100 line-clamp-2 group-hover:text-red-600 dark:group-hover:text-red-400 transition-colors">
           {video.title}
         </h3>
-        <p className="text-xs text-gray-600 mt-1 truncate">{video.author}</p>
-        <p className="text-xs text-gray-500 mt-0.5">
+        <p className="text-xs text-gray-600 dark:text-zinc-400 mt-1 truncate">{video.author}</p>
+        <p className="text-xs text-gray-500 dark:text-zinc-500 mt-0.5">
           {video.size} • {video.uploadedAt}
         </p>
       </Link>

@@ -77,7 +77,7 @@ export default function Header({ onUpload, onGoLiveClick, isLive }: HeaderProps)
 
               <button
                 onClick={handleLogout}
-                className="text-gray-600 hover:text-red-600 text-sm font-medium px-3 py-2 rounded-lg transition-colors"
+                className="text-gray-600 dark:text-zinc-400 hover:text-red-600 dark:hover:text-red-400 text-sm font-medium px-3 py-2 rounded-lg transition-colors"
               >
                 Logout
               </button>
