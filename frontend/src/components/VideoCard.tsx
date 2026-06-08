@@ -4,9 +4,11 @@ import { Video } from '../types'
 interface VideoCardProps {
   video: Video
   onDelete: (id: number) => void
+  currentUserId: number | null
 }
 
-export default function VideoCard({ video, onDelete }: VideoCardProps) {
+export default function VideoCard({ video, onDelete, currentUserId }: VideoCardProps) {
+  const isAuthor = currentUserId !== null && video.authorId === currentUserId
   const handleDelete = (e: React.MouseEvent) => {
     e.preventDefault()
     e.stopPropagation()
@@ -45,8 +47,8 @@ export default function VideoCard({ video, onDelete }: VideoCardProps) {
         )}
       </Link>
 
-      {/* Delete Button - Visible on Hover */}
-      <button
+      {/* Delete Button - Visible on Hover, author only */}
+      {isAuthor && <button
         onClick={handleDelete}
         aria-label={`Delete ${video.title}`}
         className="absolute top-5 right-3 bg-black bg-opacity-60 hover:bg-opacity-100 text-white p-2 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-20"
@@ -58,7 +60,7 @@ export default function VideoCard({ video, onDelete }: VideoCardProps) {
             clipRule="evenodd"
           />
         </svg>
-      </button>
+      </button>}
 
       {/* Video Information */}
       <Link to={`/watch/${video.id}`} className="flex-1 min-w-0 hover:no-underline">

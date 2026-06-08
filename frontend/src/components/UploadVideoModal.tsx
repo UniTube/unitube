@@ -57,6 +57,7 @@ export default function UploadVideoModal({ onUpload, onClose }: UploadVideoModal
 
       const video: Video = {
         id: response.id,
+        authorId: response.authorId,
         title: response.title,
         size: response.size,
         uploadedAt: response.uploadedAt,

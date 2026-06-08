@@ -5,6 +5,7 @@ import GoLiveModal from '../components/GoLiveModal'
 import UploadVideoModal from '../components/UploadVideoModal'
 import VideoCard from '../components/VideoCard'
 import videoService from '../services/videoService'
+import authService from '../services/authService'
 import { Video } from '../types'
 
 interface HomePageProps {
@@ -124,7 +125,12 @@ export default function HomePage({ isLive, onUpload, onDelete, onGoLive }: HomeP
 
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
                 {videos.map((video) => (
-                  <VideoCard key={video.id} video={video} onDelete={handleDeleteVideo} />
+                  <VideoCard
+                    key={video.id}
+                    video={video}
+                    onDelete={handleDeleteVideo}
+                    currentUserId={authService.getUser()?.id ?? null}
+                  />
                 ))}
               </div>
             </div>

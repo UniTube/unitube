@@ -15,6 +15,7 @@ export interface UploadVideoResponse {
   uploadedAt: string
   description: string
   author: string
+  authorId: number
   url: string
 }
 
@@ -41,6 +42,7 @@ function mapVideo(video: BackendVideoResponse): UploadVideoResponse {
     uploadedAt: video.uploadedAt || '—',
     description: video.description || '',
     author: video.author || 'Unknown',
+    authorId: video.authorId,
     url: getStreamUrl(video.id),
   }
 }
@@ -112,6 +114,26 @@ class VideoService {
 
   getStreamUrl(id: number): string {
     return getStreamUrl(id)
+  }
+
+  async updateVideo(id: number, data: { title: string; description: string }): Promise<UploadVideoResponse> {
+    const response = await fetch(`${API_BASE_URL}/videos/${id}`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        Accept: 'application/json',
+        ...authService.getAuthHeaders(),
+      },
+      body: JSON.stringify(data),
+    })
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({ error: 'Update failed' }))
+      throw new Error(errorData.error || errorData.message || `Update failed with status ${response.status}`)
+    }
+
+    const result: BackendVideoResponse = await response.json()
+    return mapVideo(result)
   }
 
   async deleteVideo(id: number): Promise<void> {
