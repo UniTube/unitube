@@ -55,28 +55,78 @@ export default function RegisterPage() {
         <div className="bg-white dark:bg-zinc-900 rounded-lg shadow-lg p-8">
           <form onSubmit={handleSubmit} className="space-y-6">
             <div>
-              <label htmlFor="name" className={labelClass}>Vorname</label>
-              <input id="name" type="text" value={name} onChange={(e) => setName(e.target.value)} placeholder="Jean" className={inputClass} required />
+              <label htmlFor="name" className={labelClass}>
+                Vorname
+              </label>
+              <input
+                id="name"
+                type="text"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                placeholder="Jean"
+                className={inputClass}
+                required
+              />
             </div>
 
             <div>
-              <label htmlFor="surname" className={labelClass}>Nachname</label>
-              <input id="surname" type="text" value={surname} onChange={(e) => setSurname(e.target.value)} placeholder="Dupont" className={inputClass} required />
+              <label htmlFor="surname" className={labelClass}>
+                Nachname
+              </label>
+              <input
+                id="surname"
+                type="text"
+                value={surname}
+                onChange={(e) => setSurname(e.target.value)}
+                placeholder="Dupont"
+                className={inputClass}
+                required
+              />
             </div>
 
             <div>
-              <label htmlFor="email" className={labelClass}>Email</label>
-              <input id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="votre@email.com" className={inputClass} required />
+              <label htmlFor="email" className={labelClass}>
+                Email
+              </label>
+              <input
+                id="email"
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="votre@email.com"
+                className={inputClass}
+                required
+              />
             </div>
 
             <div>
-              <label htmlFor="password" className={labelClass}>Passwort</label>
-              <input id="password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="••••••••" className={inputClass} required />
+              <label htmlFor="password" className={labelClass}>
+                Passwort
+              </label>
+              <input
+                id="password"
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="••••••••"
+                className={inputClass}
+                required
+              />
             </div>
 
             <div>
-              <label htmlFor="confirmPassword" className={labelClass}>Passwort bestätigen</label>
-              <input id="confirmPassword" type="password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} placeholder="••••••••" className={inputClass} required />
+              <label htmlFor="confirmPassword" className={labelClass}>
+                Passwort bestätigen
+              </label>
+              <input
+                id="confirmPassword"
+                type="password"
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                placeholder="••••••••"
+                className={inputClass}
+                required
+              />
             </div>
 
             {error && (
@@ -100,7 +150,9 @@ export default function RegisterPage() {
               <div className="w-full border-t border-gray-200 dark:border-zinc-700" />
             </div>
             <div className="relative flex justify-center text-sm">
-              <span className="px-2 bg-white dark:bg-zinc-900 text-gray-500 dark:text-zinc-500">Oder</span>
+              <span className="px-2 bg-white dark:bg-zinc-900 text-gray-500 dark:text-zinc-500">
+                Oder
+              </span>
             </div>
           </div>
 

@@ -1,4 +1,5 @@
-import { UploadVideoRequest, UploadVideoResponse, VideoResponse } from '../types'
+import { UploadVideoRequest, UploadVideoResponse, VideoResponse, Comment } from '../types'
+export type { Comment }
 import authService from './authService'
 
 const API_BASE_URL = 'http://127.0.0.1:8088/api/v1'
@@ -7,12 +8,24 @@ function getStreamUrl(id: number): string {
   return `${API_BASE_URL}/videos/${id}`
 }
 
+/** Formats an ISO date string or any Date-parseable value as "yyyy-MM-dd HH:mm:ss" */
+function formatDate(raw: string | undefined): string {
+  if (!raw) return '—'
+  const d = new Date(raw)
+  if (isNaN(d.getTime())) return raw
+  const pad = (n: number) => String(n).padStart(2, '0')
+  return (
+    `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())} ` +
+    `${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`
+  )
+}
+
 function mapVideo(video: VideoResponse): UploadVideoResponse {
   return {
     id: video.id,
     title: video.title,
     size: video.size || '—',
-    uploadedAt: video.uploadedAt || '—',
+    uploadedAt: formatDate(video.uploadedAt),
     description: video.description || '',
     author: video.author || 'Unknown',
     authorId: video.authorId,
@@ -85,7 +98,11 @@ class VideoService {
 
     const response = await fetch(`${API_BASE_URL}/videos/${videoId}/comments`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        Accept: 'application/json',
+        ...authService.getAuthHeaders(),
+      },
       body: JSON.stringify({ content, videoId, authorId: user.id }),
     })
     if (!response.ok) throw new Error(`Failed to post comment with status ${response.status}`)
@@ -102,11 +119,11 @@ class VideoService {
     return response.json()
   }
 
-  // Like a video (no auth required by backend)
+  // Like a video
   async likeVideo(videoId: number): Promise<void> {
     const response = await fetch(`${API_BASE_URL}/videos/${videoId}/like`, {
       method: 'POST',
-      headers: { Accept: 'application/json' },
+      headers: { Accept: 'application/json', ...authService.getAuthHeaders() },
     })
     if (!response.ok) throw new Error(`Failed to like video with status ${response.status}`)
   }

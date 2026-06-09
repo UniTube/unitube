@@ -21,6 +21,8 @@ func main() {
 	userController := controllers.NewUserController(userService)
 	videoService := services.NewVideoService(repositories.NewVideoRepo(db))
 	videoController := controllers.NewVideoController(videoService)
+	commentService := services.NewCommentService(repositories.NewCommentRepo(db), repositories.NewVideoRepo(db))
+	commentController := controllers.NewCommentController(commentService)
 	router := gin.Default()
 	router.Use(cors.New(cors.Config{
 		AllowOrigins:     []string{"http://localhost:3000", "http://localhost:5173", "*"},
@@ -49,6 +51,7 @@ func main() {
 	{
 		routes.SetupUserRoutes(v1, userController)
 		routes.SetupVideoRoutes(v1, videoController)
+		routes.SetupCommentRoutes(v1, commentController)
 	}
 
 	// Swagger endpoint
