@@ -272,12 +272,12 @@ export default function WatchVideoPage() {
             <ul className="space-y-4">
               {comments.map((c) => (
                 <li key={c.id} className="flex gap-3">
-                  <div className="w-8 h-8 rounded-full bg-zinc-300 dark:bg-zinc-700 flex items-center justify-center text-xs font-bold shrink-0">
-                    {c.authorId}
+                  <div className="w-8 h-8 rounded-full bg-zinc-300 dark:bg-zinc-700 flex text-white items-center justify-center text-xs font-bold shrink-0">
+                    {c.authorUsername.charAt(0).toUpperCase()}
                   </div>
                   <div>
                     <p className="text-xs font-medium text-gray-500 dark:text-zinc-400 mb-0.5">
-                      User #{c.authorId}
+                      {c.authorUsername}
                     </p>
                     <p className="text-sm">{c.content}</p>
                   </div>

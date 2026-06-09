@@ -40,6 +40,7 @@ export interface UploadVideoResponse {
   uploadedAt: string
   description: string
   author: string
+  authorId: number
   url: string
 }
 
@@ -48,6 +49,7 @@ export interface Comment {
   content: string
   videoId: number
   authorId: number
+  authorUsername: string
 }
 
 export interface VideoResponse {

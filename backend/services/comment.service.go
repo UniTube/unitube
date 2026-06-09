@@ -11,10 +11,11 @@ import (
 type CommentService struct {
 	commentRepo *repositories.CommentRepo
 	videoRepo   *repositories.VideoRepo
+	userRepo    *repositories.UserRepo
 }
 
-func NewCommentService(commentRepo *repositories.CommentRepo, videoRepo *repositories.VideoRepo) *CommentService {
-	return &CommentService{commentRepo: commentRepo, videoRepo: videoRepo}
+func NewCommentService(commentRepo *repositories.CommentRepo, videoRepo *repositories.VideoRepo, userRepo *repositories.UserRepo) *CommentService {
+	return &CommentService{commentRepo: commentRepo, videoRepo: videoRepo, userRepo: userRepo}
 }
 
 func (s *CommentService) AddComment(dto *dtos.CommentDTO) error {
@@ -23,7 +24,18 @@ func (s *CommentService) AddComment(dto *dtos.CommentDTO) error {
 		VideoID:  dto.VideoID,
 		AuthorID: dto.AuthorID,
 	}
-	return s.commentRepo.CreateComment(comment)
+	if err := s.commentRepo.CreateComment(comment); err != nil {
+		return err
+	}
+
+	// Populate authorUsername so the response includes it immediately
+	user, err := s.userRepo.GetUserByID(dto.AuthorID)
+	if err != nil {
+		return err
+	}
+	dto.ID = comment.ID
+	dto.Authorname = user.Name
+	return nil
 }
 
 func (s *CommentService) GetCommentsByVideoID(videoID uint) ([]dtos.CommentDTO, error) {
@@ -33,7 +45,17 @@ func (s *CommentService) GetCommentsByVideoID(videoID uint) ([]dtos.CommentDTO, 
 	}
 	commentDTOs := make([]dtos.CommentDTO, len(comments))
 	for i, c := range comments {
-		commentDTOs[i] = dtos.CommentDTO{ID: c.ID, Content: c.Content, VideoID: c.VideoID, AuthorID: c.AuthorID}
+		user, err := s.userRepo.GetUserByID(c.AuthorID)
+		if err != nil {
+			return nil, err
+		}
+		commentDTOs[i] = dtos.CommentDTO{
+			ID:         c.ID,
+			Content:    c.Content,
+			VideoID:    c.VideoID,
+			AuthorID:   c.AuthorID,
+			Authorname: user.Name,
+		}
 	}
 	return commentDTOs, nil
 }

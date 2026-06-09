@@ -8,7 +8,6 @@ function getStreamUrl(id: number): string {
   return `${API_BASE_URL}/videos/${id}`
 }
 
-/** Formats an ISO date string or any Date-parseable value as "yyyy-MM-dd HH:mm:ss" */
 function formatDate(raw: string | undefined): string {
   if (!raw) return '—'
   const d = new Date(raw)
@@ -91,7 +90,6 @@ class VideoService {
     if (!response.ok) throw new Error(`Failed to delete video with status ${response.status}`)
   }
 
-  // Post a comment on a video
   async addComment(videoId: number, content: string): Promise<Comment> {
     const user = authService.getUser()
     if (!user?.id) throw new Error('You must be logged in to comment')
@@ -109,17 +107,17 @@ class VideoService {
     return response.json()
   }
 
-  // Fetch all comments for a video
   async getComments(videoId: number): Promise<Comment[]> {
     const response = await fetch(`${API_BASE_URL}/videos/${videoId}/comments`, {
       method: 'GET',
       headers: { Accept: 'application/json' },
     })
+    // Parse once — consuming the stream twice causes the second call to return empty
+    const data = await response.json()
     if (!response.ok) throw new Error(`Failed to fetch comments with status ${response.status}`)
-    return response.json()
+    return data
   }
 
-  // Like a video
   async likeVideo(videoId: number): Promise<void> {
     const response = await fetch(`${API_BASE_URL}/videos/${videoId}/like`, {
       method: 'POST',

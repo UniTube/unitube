@@ -21,7 +21,7 @@ func main() {
 	userController := controllers.NewUserController(userService)
 	videoService := services.NewVideoService(repositories.NewVideoRepo(db))
 	videoController := controllers.NewVideoController(videoService)
-	commentService := services.NewCommentService(repositories.NewCommentRepo(db), repositories.NewVideoRepo(db))
+	commentService := services.NewCommentService(repositories.NewCommentRepo(db), repositories.NewVideoRepo(db), repositories.NewUserRepo(db))
 	commentController := controllers.NewCommentController(commentService)
 	router := gin.Default()
 	router.Use(cors.New(cors.Config{
