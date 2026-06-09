@@ -5,6 +5,7 @@ export interface Video {
   uploadedAt: string
   description: string
   author: string
+  authorId: number
   url?: string
 }
 

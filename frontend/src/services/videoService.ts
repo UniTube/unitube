@@ -15,6 +15,7 @@ function mapVideo(video: VideoResponse): UploadVideoResponse {
     uploadedAt: video.uploadedAt || '—',
     description: video.description || '',
     author: video.author || 'Unknown',
+    authorId: video.authorId,
     url: getStreamUrl(video.id),
   }
 }

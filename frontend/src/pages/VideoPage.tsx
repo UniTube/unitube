@@ -35,7 +35,7 @@ export default function VideoPage({ videos }: VideoPageProps) {
         </div>
 
         <div className="mt-5">
-          <h1 className="text-xl font-semibold leading-snug">{video.name}</h1>
+          <h1 className="text-xl font-semibold leading-snug">{video.title}</h1>
 
           <div className="flex items-center justify-between mt-3 pb-4 border-b border-red-100 dark:border-zinc-800">
             <div className="flex items-center gap-3">

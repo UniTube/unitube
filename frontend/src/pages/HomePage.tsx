@@ -5,6 +5,7 @@ import GoLiveModal from '../components/GoLiveModal'
 import UploadVideoModal from '../components/UploadVideoModal'
 import VideoCard from '../components/VideoCard'
 import videoService from '../services/videoService'
+import authService from '../services/authService'
 import { Video } from '../types'
 
 interface HomePageProps {
@@ -75,7 +76,7 @@ export default function HomePage({ isLive, onUpload, onDelete, onGoLive }: HomeP
 
           {/* Error State */}
           {error && (
-            <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg mb-6">
+            <div className="bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-900 text-red-700 dark:text-red-400 px-4 py-3 rounded-lg mb-6">
               <p className="font-medium">Error loading videos</p>
               <p className="text-sm">{error}</p>
             </div>
@@ -85,9 +86,9 @@ export default function HomePage({ isLive, onUpload, onDelete, onGoLive }: HomeP
           {!loading && videos.length === 0 && !error && (
             <div className="flex flex-col items-center justify-center py-20">
               <div className="text-center">
-                <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <div className="w-16 h-16 bg-gray-100 dark:bg-zinc-800 rounded-full flex items-center justify-center mx-auto mb-4">
                   <svg
-                    className="w-8 h-8 text-gray-400"
+                    className="w-8 h-8 text-gray-400 dark:text-zinc-600"
                     fill="none"
                     stroke="currentColor"
                     viewBox="0 0 24 24"
@@ -100,8 +101,8 @@ export default function HomePage({ isLive, onUpload, onDelete, onGoLive }: HomeP
                     />
                   </svg>
                 </div>
-                <p className="text-gray-600 font-medium mb-2">No videos yet</p>
-                <p className="text-gray-400 text-sm mb-6">Upload your first video to get started</p>
+                <p className="text-gray-600 dark:text-zinc-400 font-medium mb-2">No videos yet</p>
+                <p className="text-gray-400 dark:text-zinc-500 text-sm mb-6">Upload your first video to get started</p>
                 <button
                   onClick={() => setShowUploadModal(true)}
                   className="bg-red-600 hover:bg-red-700 text-white font-medium px-6 py-2 rounded-lg transition-colors"
@@ -116,15 +117,20 @@ export default function HomePage({ isLive, onUpload, onDelete, onGoLive }: HomeP
           {!loading && videos.length > 0 && (
             <div>
               <div className="mb-6">
-                <h2 className="text-2xl font-bold text-gray-900">Videos</h2>
-                <p className="text-gray-500 text-sm mt-1">
+                <h2 className="text-2xl font-bold text-gray-900 dark:text-zinc-100">Videos</h2>
+                <p className="text-gray-500 dark:text-zinc-400 text-sm mt-1">
                   {videos.length} {videos.length === 1 ? 'video' : 'videos'}
                 </p>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
                 {videos.map((video) => (
-                  <VideoCard key={video.id} video={video} onDelete={handleDeleteVideo} />
+                  <VideoCard
+                    key={video.id}
+                    video={video}
+                    onDelete={handleDeleteVideo}
+                    currentUserId={authService.getUser()?.id ?? null}
+                  />
                 ))}
               </div>
             </div>

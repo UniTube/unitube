@@ -57,6 +57,7 @@ export default function UploadVideoModal({ onUpload, onClose }: UploadVideoModal
 
       const video: Video = {
         id: response.id,
+        authorId: response.authorId,
         title: response.title,
         size: response.size,
         uploadedAt: response.uploadedAt,
@@ -85,14 +86,14 @@ export default function UploadVideoModal({ onUpload, onClose }: UploadVideoModal
       className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 px-4"
       onClick={(e) => e.target === e.currentTarget && handleClose()}
     >
-      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl overflow-hidden">
+      <div className="bg-white dark:bg-zinc-900 rounded-2xl shadow-2xl w-full max-w-2xl overflow-hidden">
         {/* Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
-          <h2 className="text-base font-semibold text-gray-900">Upload video</h2>
+        <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100 dark:border-zinc-800">
+          <h2 className="text-base font-semibold text-gray-900 dark:text-zinc-100">Upload video</h2>
           <button
             onClick={handleClose}
             disabled={isLoading}
-            className="p-1.5 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            className="p-1.5 rounded-lg text-gray-400 dark:text-zinc-500 hover:text-gray-600 dark:hover:text-zinc-300 hover:bg-gray-100 dark:hover:bg-zinc-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             aria-label="Close"
           >
             <XIcon />
@@ -108,7 +109,7 @@ export default function UploadVideoModal({ onUpload, onClose }: UploadVideoModal
 
         <div className="flex flex-col sm:flex-row">
           {/* Video preview ──────────────────────────────────────── */}
-          <div className="relative bg-gray-950 sm:w-80 aspect-video sm:aspect-auto flex items-center justify-center flex-shrink-0 min-h-48">
+          <div className="relative bg-gray-950 sm:w-80 aspect-video sm:aspect-auto flex items-center justify-center shrink-0 min-h-48">
             {file && preview ? (
               <video src={preview} className="w-full h-full object-cover" />
             ) : (
@@ -163,7 +164,7 @@ export default function UploadVideoModal({ onUpload, onClose }: UploadVideoModal
           <div className="flex-1 flex flex-col px-6 py-5 gap-5">
             {/* Video title */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1.5">
+              <label className="block text-sm font-medium text-gray-700 dark:text-zinc-300 mb-1.5">
                 Title <span className="text-red-500">*</span>
               </label>
               <input
@@ -173,27 +174,27 @@ export default function UploadVideoModal({ onUpload, onClose }: UploadVideoModal
                 onChange={(e) => setTitle(e.target.value)}
                 onKeyDown={(e) => e.key === 'Enter' && !isLoading && handleUpload()}
                 disabled={isLoading}
-                className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full border border-gray-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-gray-900 dark:text-zinc-100 placeholder:text-gray-400 dark:placeholder:text-zinc-500 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent disabled:opacity-50 disabled:cursor-not-allowed"
                 autoFocus
               />
             </div>
 
             {/* Description */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1.5">Description</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-zinc-300 mb-1.5">Description</label>
               <textarea
                 placeholder="Add a description for your video…"
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
                 disabled={isLoading}
                 rows={3}
-                className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent resize-none disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full border border-gray-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-gray-900 dark:text-zinc-100 placeholder:text-gray-400 dark:placeholder:text-zinc-500 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent resize-none disabled:opacity-50 disabled:cursor-not-allowed"
               />
             </div>
 
             {/* File info (read-only) */}
             <div className="space-y-2">
-              <p className="text-sm font-medium text-gray-700">File info</p>
+              <p className="text-sm font-medium text-gray-700 dark:text-zinc-300">File info</p>
               <InfoRow label="Size" value={fileSize || '—'} />
               <InfoRow label="Uploaded at" value={uploadedAt || '—'} />
               <InfoRow label="Author" value="You" />
@@ -206,7 +207,7 @@ export default function UploadVideoModal({ onUpload, onClose }: UploadVideoModal
               <button
                 onClick={handleClose}
                 disabled={isLoading}
-                className="flex-1 py-2.5 rounded-lg border border-gray-200 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                className="flex-1 py-2.5 rounded-lg border border-gray-200 dark:border-zinc-700 text-sm font-medium text-gray-700 dark:text-zinc-300 hover:bg-gray-50 dark:hover:bg-zinc-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 Cancel
               </button>
@@ -244,9 +245,9 @@ interface InfoRowProps {
 
 function InfoRow({ label, value }: InfoRowProps) {
   return (
-    <div className="flex items-center gap-3 py-2 px-3 rounded-lg bg-gray-50">
-      <span className="text-xs text-gray-500 w-20 flex-shrink-0">{label}</span>
-      <span className="text-xs text-gray-800 truncate">{value}</span>
+    <div className="flex items-center gap-3 py-2 px-3 rounded-lg bg-gray-50 dark:bg-zinc-800">
+      <span className="text-xs text-gray-500 dark:text-zinc-400 w-20 flex-shrink-0">{label}</span>
+      <span className="text-xs text-gray-800 dark:text-zinc-200 truncate">{value}</span>
     </div>
   )
 }

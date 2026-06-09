@@ -101,7 +101,7 @@ export default function LivePage({ stream, title, onEnd }: LivePageProps) {
             autoPlay
             muted
             playsInline
-            className="w-full max-h-[calc(100vh-56px-200px)] lg:max-h-[calc(100vh-56px)] object-contain"
+            className="w-full max-h-[calc(100vh-56px-200px)] lg:max-h-[calc(100vh-56px)] object-contain [transform:scaleX(-1)]"
           />
         </div>
 

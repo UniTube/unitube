@@ -55,33 +55,32 @@ export default function Header({ onUpload, onGoLiveClick, isLive }: HeaderProps)
                 </button>
               )}
 
-                {isLive ? (
-                      <Link
-                    to="/live"
-                    className="flex items-center gap-2 bg-red-600 text-white text-sm font-medium px-4 py-2 rounded-lg"
-                  >
-                    <span className="inline-block w-2 h-2 rounded-full bg-white animate-pulse" />
-                    You are live
-                  </Link>
-                ) : (
+              {isLive ? (
+                <Link
+                  to="/live"
+                  className="flex items-center gap-2 bg-red-600 text-white text-sm font-medium px-4 py-2 rounded-lg"
+                >
+                  <span className="inline-block w-2 h-2 rounded-full bg-white animate-pulse" />
+                  You are live
+                </Link>
+              ) : (
                 onGoLiveClick && (
-                    <button
-                      onClick={onGoLiveClick}
-                      className="flex items-center gap-2 bg-white dark:bg-zinc-800 hover:bg-red-50 dark:hover:bg-zinc-700 text-red-600 dark:text-red-400 border border-red-200 dark:border-zinc-700 text-sm font-medium px-4 py-2 rounded-lg transition-colors"
-                    >
-                      <span className="inline-block w-2 h-2 rounded-full bg-red-500" />
-                      Go live
-                    </button>
+                  <button
+                    onClick={onGoLiveClick}
+                    className="flex items-center gap-2 bg-white dark:bg-zinc-800 hover:bg-red-50 dark:hover:bg-zinc-700 text-red-600 dark:text-red-400 border border-red-200 dark:border-zinc-700 text-sm font-medium px-4 py-2 rounded-lg transition-colors"
+                  >
+                    <span className="inline-block w-2 h-2 rounded-full bg-red-500" />
+                    Go live
+                  </button>
                 )
               )}
-              {isAuthenticated && (
-                <button
-                  onClick={handleLogout}
-                  className="text-gray-600 hover:text-red-600 text-sm font-medium px-3 py-2 rounded-lg transition-colors"
-                >
-                  Logout
-                </button>
-              )}
+
+              <button
+                onClick={handleLogout}
+                className="text-gray-600 dark:text-zinc-400 hover:text-red-600 dark:hover:text-red-400 text-sm font-medium px-3 py-2 rounded-lg transition-colors"
+              >
+                Logout
+              </button>
             </>
           )}
 
@@ -92,11 +91,9 @@ export default function Header({ onUpload, onGoLiveClick, isLive }: HeaderProps)
             >
               Sign In
             </Link>
-            )}
-          </>
-        )}
+          )}
+        </div>
       </div>
-      </header>
 
       {showUploadModal && onUpload && (
         <UploadVideoModal
@@ -106,7 +103,8 @@ export default function Header({ onUpload, onGoLiveClick, isLive }: HeaderProps)
           }}
           onClose={() => setShowUploadModal(false)}
         />
-    </>
+      )}
+    </header>
   )
 }
 

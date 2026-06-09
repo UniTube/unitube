@@ -2,6 +2,11 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import authService from '../services/authService'
 
+const inputClass =
+  'w-full px-4 py-2 border border-gray-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-gray-900 dark:text-zinc-100 placeholder:text-gray-400 dark:placeholder:text-zinc-500 rounded-lg focus:outline-none focus:border-red-500 focus:ring-2 focus:ring-red-200 dark:focus:ring-red-900 transition'
+
+const labelClass = 'block text-sm font-medium text-gray-700 dark:text-zinc-300 mb-2'
+
 export default function RegisterPage() {
   const [name, setName] = useState('')
   const [surname, setSurname] = useState('')
@@ -16,13 +21,10 @@ export default function RegisterPage() {
     e.preventDefault()
     setError('')
 
-    // Validate passwords match
     if (password !== confirmPassword) {
       setError('Die Passwörter stimmen nicht überein')
       return
     }
-
-    // Validate password length
     if (password.length < 6) {
       setError('Das Passwort muss mindestens 6 Zeichen lang sein')
       return
@@ -31,14 +33,7 @@ export default function RegisterPage() {
     setIsLoading(true)
 
     try {
-      await authService.register({
-        id: null,
-        name,
-        surname,
-        email,
-        password,
-      })
-      // Redirect to login page after successful registration
+      await authService.register({ id: null, name, surname, email, password })
       navigate('/login')
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Fehler bei der Registrierung')
@@ -48,108 +43,48 @@ export default function RegisterPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-red-50 to-red-100 flex items-center justify-center px-4">
+    <div className="min-h-screen bg-gradient-to-br from-red-50 to-red-100 dark:from-zinc-950 dark:to-zinc-900 flex items-center justify-center px-4">
       <div className="w-full max-w-md">
         {/* Logo/Header */}
         <div className="text-center mb-8">
           <h1 className="text-4xl font-bold text-red-600 mb-2">UniTube</h1>
-          <p className="text-gray-600">Erstellen Sie Ihr Konto</p>
+          <p className="text-gray-600 dark:text-zinc-400">Erstellen Sie Ihr Konto</p>
         </div>
 
         {/* Form Card */}
-        <div className="bg-white rounded-lg shadow-lg p-8">
+        <div className="bg-white dark:bg-zinc-900 rounded-lg shadow-lg p-8">
           <form onSubmit={handleSubmit} className="space-y-6">
-            {/* Name Input */}
             <div>
-              <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-2">
-                Vorname
-              </label>
-              <input
-                id="name"
-                type="text"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                placeholder="Jean"
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-red-500 focus:ring-2 focus:ring-red-200 transition"
-                required
-              />
+              <label htmlFor="name" className={labelClass}>Vorname</label>
+              <input id="name" type="text" value={name} onChange={(e) => setName(e.target.value)} placeholder="Jean" className={inputClass} required />
             </div>
 
-            {/* Surname Input */}
             <div>
-              <label htmlFor="surname" className="block text-sm font-medium text-gray-700 mb-2">
-                Nachname
-              </label>
-              <input
-                id="surname"
-                type="text"
-                value={surname}
-                onChange={(e) => setSurname(e.target.value)}
-                placeholder="Dupont"
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-red-500 focus:ring-2 focus:ring-red-200 transition"
-                required
-              />
+              <label htmlFor="surname" className={labelClass}>Nachname</label>
+              <input id="surname" type="text" value={surname} onChange={(e) => setSurname(e.target.value)} placeholder="Dupont" className={inputClass} required />
             </div>
 
-            {/* Email Input */}
             <div>
-              <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
-                Email
-              </label>
-              <input
-                id="email"
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="votre@email.com"
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-red-500 focus:ring-2 focus:ring-red-200 transition"
-                required
-              />
+              <label htmlFor="email" className={labelClass}>Email</label>
+              <input id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="votre@email.com" className={inputClass} required />
             </div>
 
-            {/* Password Input */}
             <div>
-              <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-2">
-                Passwort
-              </label>
-              <input
-                id="password"
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder="••••••••"
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-red-500 focus:ring-2 focus:ring-red-200 transition"
-                required
-              />
+              <label htmlFor="password" className={labelClass}>Passwort</label>
+              <input id="password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="••••••••" className={inputClass} required />
             </div>
 
-            {/* Confirm Password Input */}
             <div>
-              <label
-                htmlFor="confirmPassword"
-                className="block text-sm font-medium text-gray-700 mb-2"
-              >
-                Passwort bestätigen
-              </label>
-              <input
-                id="confirmPassword"
-                type="password"
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
-                placeholder="••••••••"
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-red-500 focus:ring-2 focus:ring-red-200 transition"
-                required
-              />
+              <label htmlFor="confirmPassword" className={labelClass}>Passwort bestätigen</label>
+              <input id="confirmPassword" type="password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} placeholder="••••••••" className={inputClass} required />
             </div>
 
-            {/* Error Message */}
             {error && (
-              <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
+              <div className="p-3 bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-900 rounded-lg text-red-700 dark:text-red-400 text-sm">
                 {error}
               </div>
             )}
 
-            {/* Submit Button */}
             <button
               type="submit"
               disabled={isLoading}
@@ -162,15 +97,14 @@ export default function RegisterPage() {
           {/* Divider */}
           <div className="mt-6 relative">
             <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t border-gray-200"></div>
+              <div className="w-full border-t border-gray-200 dark:border-zinc-700" />
             </div>
             <div className="relative flex justify-center text-sm">
-              <span className="px-2 bg-white text-gray-500">Oder</span>
+              <span className="px-2 bg-white dark:bg-zinc-900 text-gray-500 dark:text-zinc-500">Oder</span>
             </div>
           </div>
 
-          {/* Sign In Link */}
-          <p className="mt-6 text-center text-gray-600">
+          <p className="mt-6 text-center text-gray-600 dark:text-zinc-400">
             Sie haben bereits ein Konto?{' '}
             <a href="/login" className="text-red-600 font-semibold hover:text-red-700 transition">
               Sich einloggen
@@ -178,8 +112,7 @@ export default function RegisterPage() {
           </p>
         </div>
 
-        {/* Footer */}
-        <p className="text-center text-gray-500 text-sm mt-6">
+        <p className="text-center text-gray-500 dark:text-zinc-500 text-sm mt-6">
           Teilen Sie Ihre Videos mit der Universität und der Welt! UniTube - Ihre Plattform für
           Bildungsvideos.
         </p>
