@@ -25,3 +25,43 @@ export interface LoginResponse {
   token: string
   user: User
 }
+
+export interface UploadVideoRequest {
+  title: string
+  description: string
+  file: File
+}
+
+export interface UploadVideoResponse {
+  id: number
+  title: string
+  size: string
+  uploadedAt: string
+  description: string
+  author: string
+  url: string
+}
+
+export interface Comment {
+  id: number
+  content: string
+  videoId: number
+  authorId: number
+}
+
+export interface VideoResponse {
+  id: number
+  title: string
+  size: string
+  uploadedAt: string
+  description: string
+  author: string
+  authorId: number
+  url: string
+}
+
+export interface UploadVideoRequest {
+  title: string
+  description: string
+  file: File
+}

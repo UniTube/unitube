@@ -12,4 +12,6 @@ type Video struct {
 	UploadAt    string
 	AuthorID    uint
 	Author      User `gorm:"foreignKey:AuthorID"`
+	Likes       int `gorm:"default:0"`
+	Comments    []Comment `gorm:"foreignKey:VideoID"`
 }

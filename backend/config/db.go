@@ -28,6 +28,6 @@ func ConnectDB() *gorm.DB {
 	if err != nil {
 		log.Fatal("Failed to connect to database:", err)
 	}
-	db.AutoMigrate(&models.User{}, &models.Video{})
+	db.AutoMigrate(&models.User{}, &models.Video{}, &models.Comment{})
 	return db
 }

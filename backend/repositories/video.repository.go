@@ -41,3 +41,11 @@ func (v *VideoRepo) GetVideoByID(id uint) (*models.Video, error) {
 	}
 	return &video, nil
 }
+
+func (v *VideoRepo) DeleteVideo(id uint) error{
+	
+	if err := v.Db.Delete(&models.Video{}, id).Error; err != nil{
+		return err;
+	}
+	return  nil
+}

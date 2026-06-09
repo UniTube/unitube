@@ -1,39 +1,13 @@
+import { UploadVideoRequest, UploadVideoResponse, VideoResponse } from '../types'
 import authService from './authService'
 
 const API_BASE_URL = 'http://127.0.0.1:8088/api/v1'
-
-export interface UploadVideoRequest {
-  title: string
-  description: string
-  file: File
-}
-
-export interface UploadVideoResponse {
-  id: number
-  title: string
-  size: string
-  uploadedAt: string
-  description: string
-  author: string
-  url: string
-}
-
-interface BackendVideoResponse {
-  id: number
-  title: string
-  size: string
-  uploadedAt: string
-  description: string
-  author: string
-  authorId: number
-  url: string
-}
 
 function getStreamUrl(id: number): string {
   return `${API_BASE_URL}/videos/${id}`
 }
 
-function mapVideo(video: BackendVideoResponse): UploadVideoResponse {
+function mapVideo(video: VideoResponse): UploadVideoResponse {
   return {
     id: video.id,
     title: video.title,
@@ -48,9 +22,7 @@ function mapVideo(video: BackendVideoResponse): UploadVideoResponse {
 class VideoService {
   async uploadVideo(data: UploadVideoRequest): Promise<UploadVideoResponse> {
     const user = authService.getUser()
-    if (!user?.id) {
-      throw new Error('You must be logged in to upload a video')
-    }
+    if (!user?.id) throw new Error('You must be logged in to upload a video')
 
     const formData = new FormData()
     formData.append('title', data.title)
@@ -61,10 +33,7 @@ class VideoService {
     const response = await fetch(`${API_BASE_URL}/videos`, {
       method: 'POST',
       body: formData,
-      headers: {
-        Accept: 'application/json',
-        ...authService.getAuthHeaders(),
-      },
+      headers: { Accept: 'application/json', ...authService.getAuthHeaders() },
     })
 
     if (!response.ok) {
@@ -74,40 +43,26 @@ class VideoService {
       )
     }
 
-    const result: BackendVideoResponse = await response.json()
-    return mapVideo(result)
+    return mapVideo(await response.json())
   }
 
   async getVideos(): Promise<UploadVideoResponse[]> {
     const response = await fetch(`${API_BASE_URL}/videos`, {
       method: 'GET',
-      headers: {
-        Accept: 'application/json',
-      },
+      headers: { Accept: 'application/json' },
     })
-
-    if (!response.ok) {
-      throw new Error(`Failed to fetch videos with status ${response.status}`)
-    }
-
-    const results: BackendVideoResponse[] = await response.json()
+    if (!response.ok) throw new Error(`Failed to fetch videos with status ${response.status}`)
+    const results: VideoResponse[] = await response.json()
     return results.map(mapVideo)
   }
 
   async getVideoById(id: number): Promise<UploadVideoResponse> {
     const response = await fetch(`${API_BASE_URL}/videos/${id}/metadata`, {
       method: 'GET',
-      headers: {
-        Accept: 'application/json',
-      },
+      headers: { Accept: 'application/json' },
     })
-
-    if (!response.ok) {
-      throw new Error(`Failed to fetch video with status ${response.status}`)
-    }
-
-    const result: BackendVideoResponse = await response.json()
-    return mapVideo(result)
+    if (!response.ok) throw new Error(`Failed to fetch video with status ${response.status}`)
+    return mapVideo(await response.json())
   }
 
   getStreamUrl(id: number): string {
@@ -117,15 +72,42 @@ class VideoService {
   async deleteVideo(id: number): Promise<void> {
     const response = await fetch(`${API_BASE_URL}/videos/${id}`, {
       method: 'DELETE',
-      headers: {
-        Accept: 'application/json',
-        ...authService.getAuthHeaders(),
-      },
+      headers: { Accept: 'application/json', ...authService.getAuthHeaders() },
     })
+    if (!response.ok) throw new Error(`Failed to delete video with status ${response.status}`)
+  }
 
-    if (!response.ok) {
-      throw new Error(`Failed to delete video with status ${response.status}`)
-    }
+  // Post a comment on a video
+  async addComment(videoId: number, content: string): Promise<Comment> {
+    const user = authService.getUser()
+    if (!user?.id) throw new Error('You must be logged in to comment')
+
+    const response = await fetch(`${API_BASE_URL}/videos/${videoId}/comments`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+      body: JSON.stringify({ content, videoId, authorId: user.id }),
+    })
+    if (!response.ok) throw new Error(`Failed to post comment with status ${response.status}`)
+    return response.json()
+  }
+
+  // Fetch all comments for a video
+  async getComments(videoId: number): Promise<Comment[]> {
+    const response = await fetch(`${API_BASE_URL}/videos/${videoId}/comments`, {
+      method: 'GET',
+      headers: { Accept: 'application/json' },
+    })
+    if (!response.ok) throw new Error(`Failed to fetch comments with status ${response.status}`)
+    return response.json()
+  }
+
+  // Like a video (no auth required by backend)
+  async likeVideo(videoId: number): Promise<void> {
+    const response = await fetch(`${API_BASE_URL}/videos/${videoId}/like`, {
+      method: 'POST',
+      headers: { Accept: 'application/json' },
+    })
+    if (!response.ok) throw new Error(`Failed to like video with status ${response.status}`)
   }
 }
 

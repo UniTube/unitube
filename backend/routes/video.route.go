@@ -12,4 +12,5 @@ func SetupVideoRoutes(router *gin.RouterGroup, controller *controllers.VideoCont
 	router.GET("/videos", controller.GetAllVideos)
 	router.GET("/videos/:id/metadata", controller.GetVideoMetadata)
 	router.GET("/videos/:id", controller.GetVideoByID)
+	router.DELETE("/videos/:id", middlewares.RequireAuth, controller.DeleteVideo)
 }

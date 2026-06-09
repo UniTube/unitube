@@ -220,8 +220,31 @@ func (c *VideoController) GetVideoByID(ctx *gin.Context) {
 	ctx.Data(http.StatusPartialContent, videoDTO.MimeType, buf)
 }
 
+// DeleteVideo godoc
+// @Summary Delete a video
+// @Description Delete a video by ID
+// @Tags videos
+// @Accept json
+// @Produce json
+// @Param id path integer true "Video ID"
+// @Success 200 {object} map[string]string
+// @Failure 400 {object} map[string]string
+// @Failure 500 {object} map[string]string
+// @Router /videos/{id} [delete]
 
-
+func(v *VideoController) DeleteVideo(ctx *gin.Context){
+	idParam := ctx.Param("id")
+	var id uint
+	if _, err := fmt.Sscanf(idParam, "%d", &id); err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": "Invalid video ID"})
+		return
+	}
+	if err := v.videoService.DeleteVideo(id); err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	ctx.JSON(http.StatusOK, gin.H{"message": "Video deleted successfully"})
+}
 
 
 // GetAllVideos godoc

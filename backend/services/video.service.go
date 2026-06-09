@@ -65,6 +65,10 @@ func (v *VideoService) ToVideoResponse(video *models.Video) *dtos.VideoResponseD
 	return v.toVideoResponse(video)
 }
 
+func (v *VideoService) DeleteVideo(id uint) error{
+	return v.repo.DeleteVideo(id)
+}
+
 func (v *VideoService) toVideoResponse(video *models.Video) *dtos.VideoResponseDTO {
 	authorName := "Unknown"
 	if video.Author.ID != 0 {
