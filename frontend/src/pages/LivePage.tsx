@@ -1,16 +1,25 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState, useCallback } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
+import { useStreamRecorder } from '../hooks/useStreamRecorder'
+import { uploadStreamRecording } from '../utils/recordingUpload'
+import authService from '../services/authService'
+import { Video } from '../types'
 
 interface LivePageProps {
   stream: MediaStream | null
   title: string
   onEnd: () => void
+  onRecordingSaved?: (video: Video) => void
 }
 
-export default function LivePage({ stream, title, onEnd }: LivePageProps) {
+export default function LivePage({ stream, title, onEnd, onRecordingSaved }: LivePageProps) {
   const videoRef = useRef<HTMLVideoElement>(null)
   const navigate = useNavigate()
+  const endingRef = useRef(false)
+  const { stopRecording } = useStreamRecorder(stream)
   const [duration, setDuration] = useState(0)
+  const [saving, setSaving] = useState(false)
+  const [saveError, setSaveError] = useState<string | null>(null)
   // Simulated viewer count that slowly fluctuates
   const [viewers, setViewers] = useState(1)
 
@@ -26,16 +35,51 @@ export default function LivePage({ stream, title, onEnd }: LivePageProps) {
     if (!stream) navigate('/', { replace: true })
   }, [stream, navigate])
 
+  const finishStream = useCallback(async () => {
+    if (endingRef.current || !stream) return
+    endingRef.current = true
+    setSaving(true)
+    setSaveError(null)
+
+    let savedVideo: Video | undefined
+
+    try {
+      if (!authService.isAuthenticated()) {
+        throw new Error('You must be logged in to save your recording.')
+      }
+
+      const blob = await stopRecording()
+      if (blob.size > 0) {
+        savedVideo = await uploadStreamRecording(blob, title)
+        onRecordingSaved?.(savedVideo)
+      }
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Failed to save recording'
+      setSaveError(message)
+      setSaving(false)
+      endingRef.current = false
+      if (message.includes('log in')) {
+        stream.getTracks().forEach((t) => t.stop())
+        onEnd()
+        navigate('/login', { replace: true, state: { message } })
+      }
+      return
+    }
+
+    stream.getTracks().forEach((t) => t.stop())
+    onEnd()
+    navigate('/', { replace: true, state: savedVideo ? { newVideo: savedVideo } : undefined })
+  }, [stream, stopRecording, title, onRecordingSaved, onEnd, navigate])
+
   // Stop streaming if all tracks end (e.g. user closes browser screen-share picker)
   useEffect(() => {
     if (!stream) return
     const handleTrackEnd = () => {
-      onEnd()
-      navigate('/', { replace: true })
+      finishStream()
     }
     stream.getTracks().forEach((t) => t.addEventListener('ended', handleTrackEnd))
     return () => stream.getTracks().forEach((t) => t.removeEventListener('ended', handleTrackEnd))
-  }, [stream, onEnd, navigate])
+  }, [stream, finishStream])
 
   // Live duration counter
   useEffect(() => {
@@ -52,9 +96,7 @@ export default function LivePage({ stream, title, onEnd }: LivePageProps) {
   }, [])
 
   function handleEnd() {
-    stream?.getTracks().forEach((t) => t.stop())
-    onEnd()
-    navigate('/')
+    finishStream()
   }
 
   function formatDuration(s: number) {
@@ -68,7 +110,23 @@ export default function LivePage({ stream, title, onEnd }: LivePageProps) {
   if (!stream) return null
 
   return (
-    <div className="min-h-screen bg-neutral-950 text-white flex flex-col">
+    <div className="min-h-screen bg-neutral-950 text-white flex flex-col relative">
+      {saving && (
+        <div className="absolute inset-0 z-50 bg-black/70 flex items-center justify-center">
+          <div className="text-center">
+            <div className="w-10 h-10 border-2 border-white/30 border-t-white rounded-full animate-spin mx-auto mb-3" />
+            <p className="text-sm font-medium">Saving recording…</p>
+            <p className="text-xs text-neutral-400 mt-1">Uploading your stream as a video</p>
+          </div>
+        </div>
+      )}
+
+      {saveError && (
+        <div className="absolute top-16 left-1/2 -translate-x-1/2 z-50 bg-red-900/90 text-red-100 text-sm px-4 py-2 rounded-lg max-w-md text-center">
+          {saveError}
+        </div>
+      )}
+
       {/* Top bar */}
       <header className="bg-neutral-900 border-b border-neutral-800 px-6 py-3 flex items-center justify-between">
         <Link to="/" className="text-lg font-bold text-red-500 hover:opacity-80 transition-opacity">
@@ -85,7 +143,8 @@ export default function LivePage({ stream, title, onEnd }: LivePageProps) {
 
         <button
           onClick={handleEnd}
-          className="flex items-center gap-2 bg-red-600 hover:bg-red-700 active:bg-red-800 text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors"
+          disabled={saving}
+          className="flex items-center gap-2 bg-red-600 hover:bg-red-700 active:bg-red-800 disabled:opacity-50 disabled:cursor-not-allowed text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors"
         >
           <StopIcon />
           End stream
@@ -146,7 +205,8 @@ export default function LivePage({ stream, title, onEnd }: LivePageProps) {
           <div className="px-5 py-4 border-t border-neutral-800">
             <button
               onClick={handleEnd}
-              className="w-full py-2.5 rounded-lg bg-red-600 hover:bg-red-700 text-white text-sm font-medium transition-colors"
+              disabled={saving}
+              className="w-full py-2.5 rounded-lg bg-red-600 hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed text-white text-sm font-medium transition-colors"
             >
               End stream
             </button>

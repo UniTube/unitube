@@ -8,7 +8,7 @@ import { Video } from './types'
 import RegisterPage from './pages/RegisterPage'
 
 export default function App() {
-  const [videos, setVideos] = useState<Video[]>([])
+  const [, setVideos] = useState<Video[]>([])
   const [stream, setStream] = useState<MediaStream | null>(null)
   const [liveTitle, setLiveTitle] = useState('')
 
@@ -48,7 +48,14 @@ export default function App() {
       <Route path="/watch/:id" element={<WatchVideoPage />} />
       <Route
         path="/live"
-        element={<LivePage stream={stream} title={liveTitle} onEnd={handleEndStream} />}
+        element={
+          <LivePage
+            stream={stream}
+            title={liveTitle}
+            onEnd={handleEndStream}
+            onRecordingSaved={(video) => handleUpload([video])}
+          />
+        }
       />
       <Route path="/register" element={<RegisterPage />} />
     </Routes>
