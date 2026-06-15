@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useLocation } from 'react-router-dom'
 import Header from '../components/Header'
 import GoLiveModal from '../components/GoLiveModal'
 import UploadVideoModal from '../components/UploadVideoModal'
@@ -22,6 +22,15 @@ export default function HomePage({ isLive, onUpload, onDelete, onGoLive }: HomeP
   const [showGoLiveModal, setShowGoLiveModal] = useState(false)
   const [showUploadModal, setShowUploadModal] = useState(false)
   const navigate = useNavigate()
+  const location = useLocation()
+
+  useEffect(() => {
+    const newVideo = (location.state as { newVideo?: Video } | null)?.newVideo
+    if (!newVideo) return
+    setVideos((prev) => (prev.some((v) => v.id === newVideo.id) ? prev : [newVideo, ...prev]))
+    onUpload([newVideo])
+    navigate('.', { replace: true, state: {} })
+  }, [location.state, navigate, onUpload])
 
   useEffect(() => {
     const loadVideos = async () => {
@@ -41,6 +50,11 @@ export default function HomePage({ isLive, onUpload, onDelete, onGoLive }: HomeP
   }, [])
 
   function handleGoLiveStart(title: string, stream: MediaStream) {
+    if (!authService.isAuthenticated()) {
+      setShowGoLiveModal(false)
+      navigate('/login', { state: { message: 'Please log in before going live.' } })
+      return
+    }
     setShowGoLiveModal(false)
     onGoLive(title, stream)
     navigate('/live')

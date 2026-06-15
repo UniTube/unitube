@@ -21,12 +21,11 @@ func RequireAuth(ctx *gin.Context) {
 		}
 	}
 	if token == "" {
-		ctx.JSON(401, gin.H{"error": "Authorization is required"})
-		ctx.Abort()
+		ctx.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "Authorization is required"})
 		return
 	}
 	if err := verifyToken(token); err != nil {
-		ctx.JSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
+		ctx.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
 		return
 	}
 	ctx.Next()

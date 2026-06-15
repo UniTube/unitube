@@ -6,6 +6,7 @@ class AuthService {
   async login(credentials: LoginRequest): Promise<LoginResponse> {
     const response = await fetch(`${API_BASE_URL}/login`, {
       method: 'POST',
+      credentials: 'include',
       headers: {
         'Content-Type': 'application/json',
       },
@@ -38,6 +39,7 @@ class AuthService {
   }
 
   saveToken(token: string): void {
+    if (!token) return
     localStorage.setItem('auth_token', token)
   }
 
@@ -71,7 +73,28 @@ class AuthService {
   }
 
   isAuthenticated(): boolean {
-    return !!this.getToken()
+    return !!this.getToken() && !!this.getUser()?.id
+  }
+
+  async authenticatedFetch(url: string, options: RequestInit = {}): Promise<Response> {
+    const headers = new Headers(options.headers)
+    if (!headers.has('Accept')) headers.set('Accept', 'application/json')
+
+    const token = this.getToken()
+    if (token) headers.set('Authorization', `Bearer ${token}`)
+
+    const response = await fetch(url, {
+      ...options,
+      credentials: 'include',
+      headers,
+    })
+
+    if (response.status === 401) {
+      this.removeToken()
+      throw new Error('Session expired. Please log in again.')
+    }
+
+    return response
   }
 }
 

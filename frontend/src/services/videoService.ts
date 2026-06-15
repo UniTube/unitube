@@ -34,8 +34,11 @@ function mapVideo(video: VideoResponse): UploadVideoResponse {
 
 class VideoService {
   async uploadVideo(data: UploadVideoRequest): Promise<UploadVideoResponse> {
-    const user = authService.getUser()
-    if (!user?.id) throw new Error('You must be logged in to upload a video')
+    if (!authService.isAuthenticated()) {
+      throw new Error('You must be logged in to upload a video')
+    }
+
+    const user = authService.getUser()!
 
     const formData = new FormData()
     formData.append('title', data.title)
@@ -43,10 +46,9 @@ class VideoService {
     formData.append('file', data.file)
     formData.append('authorId', String(user.id))
 
-    const response = await fetch(`${API_BASE_URL}/videos`, {
+    const response = await authService.authenticatedFetch(`${API_BASE_URL}/videos`, {
       method: 'POST',
       body: formData,
-      headers: { Accept: 'application/json', ...authService.getAuthHeaders() },
     })
 
     if (!response.ok) {
@@ -83,9 +85,8 @@ class VideoService {
   }
 
   async deleteVideo(id: number): Promise<void> {
-    const response = await fetch(`${API_BASE_URL}/videos/${id}`, {
+    const response = await authService.authenticatedFetch(`${API_BASE_URL}/videos/${id}`, {
       method: 'DELETE',
-      headers: { Accept: 'application/json', ...authService.getAuthHeaders() },
     })
     if (!response.ok) throw new Error(`Failed to delete video with status ${response.status}`)
   }
@@ -94,13 +95,9 @@ class VideoService {
     const user = authService.getUser()
     if (!user?.id) throw new Error('You must be logged in to comment')
 
-    const response = await fetch(`${API_BASE_URL}/videos/${videoId}/comments`, {
+    const response = await authService.authenticatedFetch(`${API_BASE_URL}/videos/${videoId}/comments`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Accept: 'application/json',
-        ...authService.getAuthHeaders(),
-      },
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ content, videoId, authorId: user.id }),
     })
     if (!response.ok) throw new Error(`Failed to post comment with status ${response.status}`)
@@ -119,9 +116,8 @@ class VideoService {
   }
 
   async likeVideo(videoId: number): Promise<void> {
-    const response = await fetch(`${API_BASE_URL}/videos/${videoId}/like`, {
+    const response = await authService.authenticatedFetch(`${API_BASE_URL}/videos/${videoId}/like`, {
       method: 'POST',
-      headers: { Accept: 'application/json', ...authService.getAuthHeaders() },
     })
     if (!response.ok) throw new Error(`Failed to like video with status ${response.status}`)
   }
