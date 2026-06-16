@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import Header from '../components/Header'
 import GoLiveModal from '../components/GoLiveModal'
 import UploadVideoModal from '../components/UploadVideoModal'
@@ -15,6 +15,26 @@ interface HomePageProps {
   onGoLive: (title: string, stream: MediaStream) => void
 }
 
+function getDeterministicTag(video: Video, availableTags: string[]): string {
+  if (availableTags.length <= 1) return 'All'
+  const filterableTags = availableTags.filter(t => t.toLowerCase() !== 'all')
+  if (filterableTags.length === 0) return 'All'
+
+  const titleLower = video.title.toLowerCase()
+  const descLower = (video.description || '').toLowerCase()
+
+  // 1. Check if video title or description contains the tag name
+  for (const tag of filterableTags) {
+    if (titleLower.includes(tag.toLowerCase()) || descLower.includes(tag.toLowerCase())) {
+      return tag
+    }
+  }
+
+  // 2. Otherwise, map deterministically based on video.id
+  const index = video.id % filterableTags.length
+  return filterableTags[index]
+}
+
 export default function HomePage({ isLive, onUpload, onDelete, onGoLive }: HomePageProps) {
   const [videos, setVideos] = useState<Video[]>([])
   const [loading, setLoading] = useState(true)
@@ -22,6 +42,11 @@ export default function HomePage({ isLive, onUpload, onDelete, onGoLive }: HomeP
   const [showGoLiveModal, setShowGoLiveModal] = useState(false)
   const [showUploadModal, setShowUploadModal] = useState(false)
   const navigate = useNavigate()
+
+  const [tags, setTags] = useState<string[]>(['All'])
+  const [selectedTag, setSelectedTag] = useState<string>('All')
+  const [searchParams] = useSearchParams()
+  const searchQuery = searchParams.get('search') || ''
 
   useEffect(() => {
     const loadVideos = async () => {
@@ -38,6 +63,26 @@ export default function HomePage({ isLive, onUpload, onDelete, onGoLive }: HomeP
     }
 
     loadVideos()
+  }, [])
+
+  useEffect(() => {
+    async function fetchTags() {
+      try {
+        const response = await fetch('http://127.0.0.1:8088/api/v1/tags')
+        if (response.ok) {
+          const data = await response.json()
+          if (Array.isArray(data) && data.length > 0) {
+            const cleanTags = ['All', ...data.filter(t => t.toLowerCase() !== 'all')]
+            setTags(cleanTags)
+            return
+          }
+        }
+      } catch (err) {
+        console.warn('Failed to fetch tags from API, using fallback', err)
+      }
+      setTags(['All', 'Music', 'Gaming', 'Tech', 'Sports', 'Comedy', 'Education', 'News'])
+    }
+    fetchTags()
   }, [])
 
   function handleGoLiveStart(title: string, stream: MediaStream) {
@@ -57,6 +102,26 @@ export default function HomePage({ isLive, onUpload, onDelete, onGoLive }: HomeP
     onDelete(id)
   }
 
+  const filteredVideos = videos.filter((video) => {
+    if (searchQuery.trim()) {
+      const q = searchQuery.toLowerCase()
+      const matchesTitle = video.title.toLowerCase().includes(q)
+      const matchesDesc = (video.description || '').toLowerCase().includes(q)
+      if (!matchesTitle && !matchesDesc) {
+        return false
+      }
+    }
+
+    if (selectedTag !== 'All') {
+      const videoTag = getDeterministicTag(video, tags)
+      if (videoTag.toLowerCase() !== selectedTag.toLowerCase()) {
+        return false
+      }
+    }
+
+    return true
+  })
+
   return (
     <div className="min-h-screen bg-red-50 dark:bg-zinc-950 text-gray-900 dark:text-zinc-100">
       <Header
@@ -64,6 +129,25 @@ export default function HomePage({ isLive, onUpload, onDelete, onGoLive }: HomeP
         onGoLiveClick={() => setShowGoLiveModal(true)}
         isLive={isLive}
       />
+
+      {/* Dynamic Tag Chips List */}
+      <div className="w-full bg-white dark:bg-zinc-900 border-b border-red-50 dark:border-zinc-800 shadow-sm">
+        <div className="flex gap-2 sm:gap-3 overflow-x-auto py-3 px-4 max-w-7xl mx-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
+          {tags.map((tag) => (
+            <button
+              key={tag}
+              onClick={() => setSelectedTag(tag)}
+              className={`px-3 md:px-4 py-1.5 rounded-lg text-xs md:text-sm font-medium transition-all duration-150 whitespace-nowrap cursor-pointer select-none ${
+                selectedTag === tag
+                  ? 'bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-950 font-semibold shadow-sm'
+                  : 'bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 text-zinc-800 dark:text-zinc-200 border border-zinc-200/50 dark:border-zinc-700/50'
+              }`}
+            >
+              {tag}
+            </button>
+          ))}
+        </div>
+      </div>
 
       <main className="w-full">
         <div className="max-w-7xl mx-auto px-4 py-8">
@@ -82,7 +166,7 @@ export default function HomePage({ isLive, onUpload, onDelete, onGoLive }: HomeP
             </div>
           )}
 
-          {/* Empty State */}
+          {/* Empty State (No videos at all) */}
           {!loading && videos.length === 0 && !error && (
             <div className="flex flex-col items-center justify-center py-20">
               <div className="text-center">
@@ -113,18 +197,52 @@ export default function HomePage({ isLive, onUpload, onDelete, onGoLive }: HomeP
             </div>
           )}
 
+          {/* No Search/Filter Results State */}
+          {!loading && videos.length > 0 && filteredVideos.length === 0 && (
+            <div className="flex flex-col items-center justify-center py-20">
+              <div className="text-center">
+                <div className="w-16 h-16 bg-gray-100 dark:bg-zinc-800 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <svg
+                    className="w-8 h-8 text-gray-400 dark:text-zinc-600"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                    />
+                  </svg>
+                </div>
+                <p className="text-gray-600 dark:text-zinc-400 font-medium mb-2">No videos match your search or filter</p>
+                <p className="text-gray-400 dark:text-zinc-500 text-sm mb-6">Try clearing your search query or choosing another tag.</p>
+                <button
+                  onClick={() => {
+                    setSelectedTag('All')
+                    navigate('/')
+                  }}
+                  className="bg-red-600 hover:bg-red-700 text-white font-medium px-6 py-2 rounded-lg transition-colors cursor-pointer"
+                >
+                  Reset filters
+                </button>
+              </div>
+            </div>
+          )}
+
           {/* Videos Grid */}
-          {!loading && videos.length > 0 && (
+          {!loading && filteredVideos.length > 0 && (
             <div>
               <div className="mb-6">
                 <h2 className="text-2xl font-bold text-gray-900 dark:text-zinc-100">Videos</h2>
                 <p className="text-gray-500 dark:text-zinc-400 text-sm mt-1">
-                  {videos.length} {videos.length === 1 ? 'video' : 'videos'}
+                  {filteredVideos.length} {filteredVideos.length === 1 ? 'video' : 'videos'}
                 </p>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-                {videos.map((video) => (
+                {filteredVideos.map((video) => (
                   <VideoCard
                     key={video.id}
                     video={video}

@@ -52,6 +52,9 @@ func main() {
 		routes.SetupUserRoutes(v1, userController)
 		routes.SetupVideoRoutes(v1, videoController)
 		routes.SetupCommentRoutes(v1, commentController)
+		v1.GET("/tags", func(c *gin.Context) {
+			c.JSON(200, []string{"All", "Music", "Gaming", "Tech", "Sports", "Comedy", "Education", "News"})
+		})
 	}
 
 	// Swagger endpoint
