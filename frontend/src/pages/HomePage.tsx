@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { useNavigate, useSearchParams } from 'react-router-dom'
+import { useNavigate, useSearchParams, useLocation } from 'react-router-dom'
 import Header from '../components/Header'
 import GoLiveModal from '../components/GoLiveModal'
 import UploadVideoModal from '../components/UploadVideoModal'
@@ -17,7 +17,7 @@ interface HomePageProps {
 
 function getDeterministicTag(video: Video, availableTags: string[]): string {
   if (availableTags.length <= 1) return 'All'
-  const filterableTags = availableTags.filter(t => t.toLowerCase() !== 'all')
+  const filterableTags = availableTags.filter((t) => t.toLowerCase() !== 'all')
   if (filterableTags.length === 0) return 'All'
 
   const titleLower = video.title.toLowerCase()
@@ -47,6 +47,15 @@ export default function HomePage({ isLive, onUpload, onDelete, onGoLive }: HomeP
   const [selectedTag, setSelectedTag] = useState<string>('All')
   const [searchParams] = useSearchParams()
   const searchQuery = searchParams.get('search') || ''
+  const location = useLocation()
+
+  useEffect(() => {
+    const newVideo = (location.state as { newVideo?: Video } | null)?.newVideo
+    if (!newVideo) return
+    setVideos((prev) => (prev.some((v) => v.id === newVideo.id) ? prev : [newVideo, ...prev]))
+    onUpload([newVideo])
+    navigate('.', { replace: true, state: {} })
+  }, [location.state, navigate, onUpload])
 
   useEffect(() => {
     const loadVideos = async () => {
@@ -72,7 +81,7 @@ export default function HomePage({ isLive, onUpload, onDelete, onGoLive }: HomeP
         if (response.ok) {
           const data = await response.json()
           if (Array.isArray(data) && data.length > 0) {
-            const cleanTags = ['All', ...data.filter(t => t.toLowerCase() !== 'all')]
+            const cleanTags = ['All', ...data.filter((t) => t.toLowerCase() !== 'all')]
             setTags(cleanTags)
             return
           }
@@ -86,6 +95,11 @@ export default function HomePage({ isLive, onUpload, onDelete, onGoLive }: HomeP
   }, [])
 
   function handleGoLiveStart(title: string, stream: MediaStream) {
+    if (!authService.isAuthenticated()) {
+      setShowGoLiveModal(false)
+      navigate('/login', { state: { message: 'Please log in before going live.' } })
+      return
+    }
     setShowGoLiveModal(false)
     onGoLive(title, stream)
     navigate('/live')
@@ -186,7 +200,9 @@ export default function HomePage({ isLive, onUpload, onDelete, onGoLive }: HomeP
                   </svg>
                 </div>
                 <p className="text-gray-600 dark:text-zinc-400 font-medium mb-2">No videos yet</p>
-                <p className="text-gray-400 dark:text-zinc-500 text-sm mb-6">Upload your first video to get started</p>
+                <p className="text-gray-400 dark:text-zinc-500 text-sm mb-6">
+                  Upload your first video to get started
+                </p>
                 <button
                   onClick={() => setShowUploadModal(true)}
                   className="bg-red-600 hover:bg-red-700 text-white font-medium px-6 py-2 rounded-lg transition-colors"
@@ -216,8 +232,12 @@ export default function HomePage({ isLive, onUpload, onDelete, onGoLive }: HomeP
                     />
                   </svg>
                 </div>
-                <p className="text-gray-600 dark:text-zinc-400 font-medium mb-2">No videos match your search or filter</p>
-                <p className="text-gray-400 dark:text-zinc-500 text-sm mb-6">Try clearing your search query or choosing another tag.</p>
+                <p className="text-gray-600 dark:text-zinc-400 font-medium mb-2">
+                  No videos match your search or filter
+                </p>
+                <p className="text-gray-400 dark:text-zinc-500 text-sm mb-6">
+                  Try clearing your search query or choosing another tag.
+                </p>
                 <button
                   onClick={() => {
                     setSelectedTag('All')
