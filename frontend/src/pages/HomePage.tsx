@@ -179,9 +179,16 @@ export default function HomePage({ isLive, onUpload, onDelete, onGoLive }: HomeP
     }
 
     if (selectedTag !== 'All') {
-      const videoTag = getDeterministicTag(video, tags)
-      if (videoTag.toLowerCase() !== selectedTag.toLowerCase()) {
-        return false
+      if (video.tags && video.tags.length > 0) {
+        const matchesTag = video.tags.some(t => t.toLowerCase() === selectedTag.toLowerCase())
+        if (!matchesTag) {
+          return false
+        }
+      } else {
+        const videoTag = getDeterministicTag(video, tags)
+        if (videoTag.toLowerCase() !== selectedTag.toLowerCase()) {
+          return false
+        }
       }
     }
 

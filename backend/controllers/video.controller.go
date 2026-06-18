@@ -10,6 +10,7 @@ import (
 	"os"
 	"path/filepath"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -81,6 +82,7 @@ func (c *VideoController) CreateVideo(ctx *gin.Context) {
 		MimeType:   mimeType,
 		UploadAt:    time.Now().String(),
 		AuthorID:    uint(authorId),
+		Tags:        ctx.PostFormArray("tags"),
 	}
 
 	response, err := c.videoService.CreateVideo(&videoDTO)
@@ -270,6 +272,38 @@ func (c *VideoController) GetAllVideos(ctx *gin.Context) {
 	}
 	ctx.JSON(http.StatusOK, videoDTOs)
 }
+
+// FilterVideos godoc
+// @Summary Filter videos by title and/or tags
+// @Description Retrieve videos filtered by name and tags query parameters
+// @Tags videos
+// @Accept json
+// @Produce json
+// @Param name query string false "Video name (title)"
+// @Param tags query string false "Comma-separated tag names or multiple tag query parameters"
+// @Success 200 {array} dtos.VideoResponseDTO
+// @Failure 500 {object} map[string]string
+// @Router /videos/filter [get]
+func (c *VideoController) FilterVideos(ctx *gin.Context) {
+	name := ctx.Query("name")
+	var tags []string
+	if tagsParam := ctx.Query("tags"); tagsParam != "" {
+		tags = strings.Split(tagsParam, ",")
+		for i, t := range tags {
+			tags[i] = strings.TrimSpace(t)
+		}
+	} else {
+		tags = ctx.QueryArray("tags")
+	}
+
+	videoDTOs, err := c.videoService.FilterVideos(name, tags)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	ctx.JSON(http.StatusOK, videoDTOs)
+}
+
 // detectMimeType reads the file header to detect the actual MIME type
 func (v *VideoController) detectMimeType(file *multipart.FileHeader) (string, error) {
     src, err := file.Open()

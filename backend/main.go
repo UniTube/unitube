@@ -7,6 +7,7 @@ import (
 	"backend/repositories"
 	"backend/routes"
 	"backend/services"
+	"backend/models"
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
@@ -53,7 +54,16 @@ func main() {
 		routes.SetupVideoRoutes(v1, videoController)
 		routes.SetupCommentRoutes(v1, commentController)
 		v1.GET("/tags", func(c *gin.Context) {
-			c.JSON(200, []string{"All", "Music", "Gaming", "Tech", "Sports", "Comedy", "Education", "News"})
+			var tags []models.Tag
+			if err := db.Find(&tags).Error; err != nil {
+				c.JSON(500, gin.H{"error": err.Error()})
+				return
+			}
+			tagNames := make([]string, len(tags))
+			for i, t := range tags {
+				tagNames[i] = t.Name
+			}
+			c.JSON(200, tagNames)
 		})
 	}
 

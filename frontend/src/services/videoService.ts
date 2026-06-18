@@ -29,6 +29,7 @@ export function mapVideo(video: VideoResponse): UploadVideoResponse {
     author: video.author || 'Unknown',
     authorId: video.authorId,
     url: getStreamUrl(video.id),
+    tags: video.tags || [],
   }
 }
 
@@ -45,6 +46,9 @@ class VideoService {
     formData.append('description', data.description)
     formData.append('file', data.file)
     formData.append('authorId', String(user.id))
+    if (data.tags) {
+      data.tags.forEach((tag) => formData.append('tags', tag))
+    }
 
     const response = await authService.authenticatedFetch(`${API_BASE_URL}/videos`, {
       method: 'POST',
@@ -127,6 +131,26 @@ class VideoService {
       },
     )
     if (!response.ok) throw new Error(`Failed to like video with status ${response.status}`)
+  }
+
+  async filterVideos(name?: string, tags?: string[]): Promise<UploadVideoResponse[]> {
+    const params = new URLSearchParams()
+    if (name) params.append('name', name)
+    if (tags) {
+      tags.forEach((tag) => params.append('tags', tag))
+    }
+
+    const response = await fetch(`${API_BASE_URL}/videos/filter?${params.toString()}`, {
+      method: 'GET',
+      headers: { Accept: 'application/json' },
+    })
+
+    if (!response.ok) {
+      throw new Error(`Failed to filter videos with status ${response.status}`)
+    }
+
+    const results: VideoResponse[] = await response.json()
+    return results.map(mapVideo)
   }
 }
 

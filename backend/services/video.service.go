@@ -19,6 +19,15 @@ func NewVideoService(repo *repositories.VideoRepo) *VideoService {
 }
 
 func (v *VideoService) CreateVideo(videoDTO *dtos.VideoDTO) (*dtos.VideoResponseDTO, error) {
+	var tags []models.Tag
+	for _, tagName := range videoDTO.Tags {
+		var tag models.Tag
+		if err := v.repo.Db.FirstOrCreate(&tag, models.Tag{Name: tagName}).Error; err != nil {
+			return nil, err
+		}
+		tags = append(tags, tag)
+	}
+
 	video := &models.Video{
 		Title:       videoDTO.Title,
 		Description: videoDTO.Description,
@@ -27,6 +36,7 @@ func (v *VideoService) CreateVideo(videoDTO *dtos.VideoDTO) (*dtos.VideoResponse
 		AuthorID:    videoDTO.AuthorID,
 		MimeType:    videoDTO.MimeType,
 		UploadAt:    videoDTO.UploadAt,
+		Tags:        tags,
 	}
 	if err := v.repo.CreateVideo(video); err != nil {
 		return nil, err
@@ -80,6 +90,11 @@ func (v *VideoService) toVideoResponse(video *models.Video) *dtos.VideoResponseD
 		uploadedAt = video.CreatedAt.Format("02/01/2006 15:04")
 	}
 
+	tagNames := make([]string, len(video.Tags))
+	for i, tag := range video.Tags {
+		tagNames[i] = tag.Name
+	}
+
 	return &dtos.VideoResponseDTO{
 		ID:          video.ID,
 		Title:       video.Title,
@@ -89,7 +104,21 @@ func (v *VideoService) toVideoResponse(video *models.Video) *dtos.VideoResponseD
 		Size:        formatFileSize(video.Size),
 		UploadedAt:  uploadedAt,
 		URL:         buildStreamURL(video.ID),
+		Tags:        tagNames,
 	}
+}
+
+func (v *VideoService) FilterVideos(name string, tags []string) ([]dtos.VideoResponseDTO, error) {
+	videos, err := v.repo.Filter(name, tags)
+	if err != nil {
+		return nil, err
+	}
+
+	videoDTOs := make([]dtos.VideoResponseDTO, len(videos))
+	for i, video := range videos {
+		videoDTOs[i] = *v.toVideoResponse(&video)
+	}
+	return videoDTOs, nil
 }
 
 func buildStreamURL(id uint) string {

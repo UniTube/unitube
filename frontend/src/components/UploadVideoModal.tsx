@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { Video } from '../types'
 import videoService from '../services/videoService'
 
@@ -22,7 +22,68 @@ export default function UploadVideoModal({ onUpload, onClose }: UploadVideoModal
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
+  const [savedTags, setSavedTags] = useState<string[]>([])
+  const [selectedTags, setSelectedTags] = useState<string[]>([])
+  const [tagInput, setTagInput] = useState('')
+
   const fileInputRef = useRef<HTMLInputElement>(null)
+
+  useEffect(() => {
+    async function fetchTags() {
+      try {
+        const response = await fetch('http://127.0.0.1:8088/api/v1/tags')
+        if (response.ok) {
+          const data = await response.json()
+          setSavedTags(data)
+        }
+      } catch (err) {
+        console.error('Failed to fetch tags for upload modal', err)
+      }
+    }
+    fetchTags()
+  }, [])
+
+  const fuzzyMatch = (input: string, target: string) => {
+    if (!input) return true
+    const inputLower = input.toLowerCase()
+    const targetLower = target.toLowerCase()
+    let inputIdx = 0
+    for (let targetIdx = 0; targetIdx < targetLower.length; targetIdx++) {
+      if (targetLower[targetIdx] === inputLower[inputIdx]) {
+        inputIdx++
+        if (inputIdx === inputLower.length) return true
+      }
+    }
+    return false
+  }
+
+  const filteredSavedTags = savedTags.filter(
+    (tag) => !selectedTags.includes(tag) && fuzzyMatch(tagInput, tag)
+  )
+
+  function addTag(tag: string) {
+    const trimmed = tag.trim()
+    if (trimmed && !selectedTags.includes(trimmed)) {
+      setSelectedTags([...selectedTags, trimmed])
+    }
+    setTagInput('')
+  }
+
+  function handleTagInputChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const value = e.target.value
+    if (savedTags.includes(value)) {
+      addTag(value)
+    } else {
+      setTagInput(value)
+    }
+  }
+
+  function handleTagInputKeyDown(e: React.KeyboardEvent<HTMLInputElement>) {
+    if (e.key === 'Enter') {
+      e.preventDefault()
+      addTag(tagInput)
+    }
+  }
 
   function handleFileSelect(e: React.ChangeEvent<HTMLInputElement>) {
     const selectedFile = e.target.files?.[0]
@@ -53,6 +114,7 @@ export default function UploadVideoModal({ onUpload, onClose }: UploadVideoModal
         title: title.trim(),
         description: description.trim(),
         file,
+        tags: selectedTags,
       })
 
       const video: Video = {
@@ -190,6 +252,56 @@ export default function UploadVideoModal({ onUpload, onClose }: UploadVideoModal
                 rows={3}
                 className="w-full border border-gray-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-gray-900 dark:text-zinc-100 placeholder:text-gray-400 dark:placeholder:text-zinc-500 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent resize-none disabled:opacity-50 disabled:cursor-not-allowed"
               />
+            </div>
+
+            {/* Tags Input with Datalist and Chips */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-zinc-300 mb-1.5">Tags</label>
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  list="tags-datalist"
+                  placeholder="Search or add tags..."
+                  value={tagInput}
+                  onChange={handleTagInputChange}
+                  onKeyDown={handleTagInputKeyDown}
+                  disabled={isLoading}
+                  className="flex-1 border border-gray-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-gray-900 dark:text-zinc-100 placeholder:text-gray-400 dark:placeholder:text-zinc-500 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent disabled:opacity-50 disabled:cursor-not-allowed"
+                />
+                <button
+                  type="button"
+                  onClick={() => addTag(tagInput)}
+                  disabled={isLoading}
+                  className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white text-sm font-medium rounded-lg transition-colors disabled:opacity-50 cursor-pointer"
+                >
+                  Add
+                </button>
+              </div>
+              <datalist id="tags-datalist">
+                {filteredSavedTags.map((tag) => (
+                  <option key={tag} value={tag} />
+                ))}
+              </datalist>
+
+              {/* Tag Chips */}
+              <div className="flex flex-wrap gap-1.5 mt-2">
+                {selectedTags.map((tag) => (
+                  <span
+                    key={tag}
+                    className="inline-flex items-center gap-1 bg-red-100 dark:bg-zinc-850 text-red-700 dark:text-zinc-200 text-xs font-medium px-2.5 py-1 rounded-full"
+                  >
+                    {tag}
+                    <button
+                      type="button"
+                      onClick={() => setSelectedTags(selectedTags.filter((t) => t !== tag))}
+                      disabled={isLoading}
+                      className="hover:text-red-950 dark:hover:text-white transition-colors cursor-pointer text-sm font-bold leading-none"
+                    >
+                      &times;
+                    </button>
+                  </span>
+                ))}
+              </div>
             </div>
 
             {/* File info (read-only) */}

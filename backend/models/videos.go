@@ -14,4 +14,5 @@ type Video struct {
 	Author      User `gorm:"foreignKey:AuthorID"`
 	Likes       int `gorm:"default:0"`
 	Comments    []Comment `gorm:"foreignKey:VideoID"`
+	Tags        []Tag `gorm:"many2many:video_tags;"`
 }

@@ -7,6 +7,7 @@ export interface Video {
   author: string
   authorId: number
   url?: string
+  tags?: string[]
 }
 
 export interface User {
@@ -31,6 +32,7 @@ export interface UploadVideoRequest {
   title: string
   description: string
   file: File
+  tags?: string[]
 }
 
 export interface UploadVideoResponse {
@@ -42,6 +44,7 @@ export interface UploadVideoResponse {
   author: string
   authorId: number
   url: string
+  tags?: string[]
 }
 
 export interface Comment {
@@ -61,10 +64,5 @@ export interface VideoResponse {
   author: string
   authorId: number
   url: string
-}
-
-export interface UploadVideoRequest {
-  title: string
-  description: string
-  file: File
+  tags?: string[]
 }
