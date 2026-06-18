@@ -4,7 +4,7 @@ import Header from '../components/Header'
 import GoLiveModal from '../components/GoLiveModal'
 import UploadVideoModal from '../components/UploadVideoModal'
 import VideoCard from '../components/VideoCard'
-import videoService from '../services/videoService'
+import videoService, { mapVideo } from '../services/videoService'
 import authService from '../services/authService'
 import { Video } from '../types'
 
@@ -41,6 +41,7 @@ export default function HomePage({ isLive, onUpload, onDelete, onGoLive }: HomeP
   const [error, setError] = useState<string | null>(null)
   const [showGoLiveModal, setShowGoLiveModal] = useState(false)
   const [showUploadModal, setShowUploadModal] = useState(false)
+  const [newVideoIds, setNewVideoIds] = useState<Set<number>>(new Set())
   const navigate = useNavigate()
 
   const [tags, setTags] = useState<string[]>(['All'])
@@ -72,6 +73,57 @@ export default function HomePage({ isLive, onUpload, onDelete, onGoLive }: HomeP
     }
 
     loadVideos()
+  }, [])
+
+  useEffect(() => {
+    const SSE_URL = 'http://127.0.0.1:8088/sse'
+    const eventSource = new EventSource(SSE_URL, { withCredentials: true })
+
+    eventSource.addEventListener('connected', (e) => {
+      localStorage.setItem('ClientID', JSON.parse(e.data).client_id)
+      console.log('[SSE] Connected to video events stream:', JSON.parse(e.data).client_id)
+    })
+
+    eventSource.addEventListener('new_video', (e) => {
+      try {
+        const eventData = JSON.parse(e.data)
+        if (eventData.type === 'new_video' && eventData.payload) {
+          const mappedVideo = mapVideo(eventData.payload)
+
+          setVideos((prev) => {
+            if (prev.some((v) => v.id === mappedVideo.id)) {
+              return prev
+            }
+
+            setNewVideoIds((prevSet) => {
+              const newSet = new Set(prevSet)
+              newSet.add(mappedVideo.id)
+              return newSet
+            })
+
+            setTimeout(() => {
+              setNewVideoIds((prevSet) => {
+                const newSet = new Set(prevSet)
+                newSet.delete(mappedVideo.id)
+                return newSet
+              })
+            }, 5000)
+
+            return [mappedVideo, ...prev]
+          })
+        }
+      } catch (err) {
+        console.error('[SSE] Failed to parse event data:', err)
+      }
+    })
+
+    eventSource.onerror = (err) => {
+      console.error('[SSE] Connection error:', err)
+    }
+
+    return () => {
+      eventSource.close()
+    }
   }, [])
 
   useEffect(() => {
@@ -263,12 +315,18 @@ export default function HomePage({ isLive, onUpload, onDelete, onGoLive }: HomeP
 
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
                 {filteredVideos.map((video) => (
-                  <VideoCard
+                  <div
                     key={video.id}
-                    video={video}
-                    onDelete={handleDeleteVideo}
-                    currentUserId={authService.getUser()?.id ?? null}
-                  />
+                    className={`rounded-xl p-1 transition-all duration-300 ${
+                      newVideoIds.has(video.id) ? 'animate-new-card ring-2 ring-red-500/50' : ''
+                    }`}
+                  >
+                    <VideoCard
+                      video={video}
+                      onDelete={handleDeleteVideo}
+                      currentUserId={authService.getUser()?.id ?? null}
+                    />
+                  </div>
                 ))}
               </div>
             </div>

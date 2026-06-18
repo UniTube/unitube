@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"backend/dtos"
+	"backend/hub"
 	"backend/services"
 	"fmt"
 	"mime/multipart"
@@ -87,6 +88,11 @@ func (c *VideoController) CreateVideo(ctx *gin.Context) {
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
+	clientID := ctx.GetHeader("X-Client-ID")
+	hub.Instance.BroadcastExcept(hub.Event{
+		Type:    "new_video",
+		Payload: response,
+	}, clientID)
 
 	ctx.JSON(http.StatusCreated, response)
 }

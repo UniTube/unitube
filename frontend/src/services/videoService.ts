@@ -19,7 +19,7 @@ function formatDate(raw: string | undefined): string {
   )
 }
 
-function mapVideo(video: VideoResponse): UploadVideoResponse {
+export function mapVideo(video: VideoResponse): UploadVideoResponse {
   return {
     id: video.id,
     title: video.title,
@@ -48,6 +48,7 @@ class VideoService {
 
     const response = await authService.authenticatedFetch(`${API_BASE_URL}/videos`, {
       method: 'POST',
+      headers: { 'X-Client-ID': localStorage.getItem('ClientID') ?? '' },
       body: formData,
     })
 
@@ -95,11 +96,14 @@ class VideoService {
     const user = authService.getUser()
     if (!user?.id) throw new Error('You must be logged in to comment')
 
-    const response = await authService.authenticatedFetch(`${API_BASE_URL}/videos/${videoId}/comments`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ content, videoId, authorId: user.id }),
-    })
+    const response = await authService.authenticatedFetch(
+      `${API_BASE_URL}/videos/${videoId}/comments`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ content, videoId, authorId: user.id }),
+      },
+    )
     if (!response.ok) throw new Error(`Failed to post comment with status ${response.status}`)
     return response.json()
   }
@@ -116,9 +120,12 @@ class VideoService {
   }
 
   async likeVideo(videoId: number): Promise<void> {
-    const response = await authService.authenticatedFetch(`${API_BASE_URL}/videos/${videoId}/like`, {
-      method: 'POST',
-    })
+    const response = await authService.authenticatedFetch(
+      `${API_BASE_URL}/videos/${videoId}/like`,
+      {
+        method: 'POST',
+      },
+    )
     if (!response.ok) throw new Error(`Failed to like video with status ${response.status}`)
   }
 }
