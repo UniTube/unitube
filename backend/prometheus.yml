@@ -1,0 +1,5 @@
+scrape_configs:
+  - job_name: "unitube-app"
+    scrape_interval: 15s
+    static_configs:
+      - targets: ["localhost:2112"]

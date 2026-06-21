@@ -96,6 +96,14 @@ class AuthService {
 
     return response
   }
+
+  async logout(): Promise<void> {
+    await fetch(`${API_BASE_URL}/logout`, {
+      method: 'POST',
+      credentials: 'include',
+    })
+    this.removeToken()
+  }
 }
 
 export default new AuthService()

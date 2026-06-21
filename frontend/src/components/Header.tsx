@@ -27,7 +27,7 @@ export default function Header({ onUpload, onGoLiveClick, isLive }: HeaderProps)
   }, [searchParams])
 
   function handleLogout() {
-    authService.removeToken()
+    authService.logout()
     navigate('/login')
   }
 

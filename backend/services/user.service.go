@@ -100,8 +100,6 @@ func createToken(username string) (string, error) {
  return tokenString, nil
 }
 
-
-
 func (userService *UserService) AuthenticateUser(email, password string) (error, dtos.LoginResponse) {
 
 	user, err := userService.repo.GetUserByEmail(email)
@@ -123,4 +121,18 @@ func (userService *UserService) AuthenticateUser(email, password string) (error,
 		Surname: user.Surname,
 		Email:   user.Email,
 	}}
+}
+
+func (userService *UserService) GetUserByEmail(email string) (*dtos.UserDTO, error) {
+	user, err := userService.repo.GetUserByEmail(email)
+	if err != nil {
+		return nil, err
+	}
+	return &dtos.UserDTO{
+		ID:      user.ID,
+		Name:    user.Name,
+		Surname: user.Surname,
+		Email:   user.Email,
+		Password: user.Password,
+	}, nil
 }

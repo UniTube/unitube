@@ -17,6 +17,7 @@ RUN go get -u golang.org/x/crypto/bcrypt
 RUN go get -u github.com/swaggo/swag/cmd/swag
 RUN go get -u github.com/swaggo/gin-swagger
 RUN go get -u github.com/swaggo/files
+RUN go get github.com/gin-contrib/openmetrics
 RUN go mod tidy
 RUN swag init 
 

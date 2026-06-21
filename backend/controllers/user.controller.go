@@ -38,6 +38,7 @@ func (c *UserController) CreateUser(ctx *gin.Context) {
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error(), "message": message})
 		return
 	}
+	userDTO.Password = "" // Clear the password before returning the response
 	ctx.JSON(http.StatusCreated, userDTO)
 }
 

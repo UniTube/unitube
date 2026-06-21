@@ -4,13 +4,16 @@ import (
 	"backend/config"
 	"backend/controllers"
 	"backend/docs"
+	"backend/models"
 	"backend/repositories"
 	"backend/routes"
 	"backend/services"
-	"backend/models"
+
+	"net/http"
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 	swaggerfiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
 )
@@ -70,6 +73,14 @@ func main() {
 	// Swagger endpoint
 	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerfiles.Handler))
 	router.GET("/sse", controllers.SSEHandler)
+
+	// Prometheus metrics endpoint
+	go func(){
+		metrics := http.NewServeMux()
+		metrics.Handle("/metrics", promhttp.Handler())
+		http.ListenAndServe(":2112", metrics)
+	}()
+
 	
 	router.Run(":8088") // listens on 0.0.0.0:8088 by default
 }
