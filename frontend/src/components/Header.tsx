@@ -17,6 +17,7 @@ export default function Header({ onUpload, onGoLiveClick, isLive }: HeaderProps)
   const [showUploadModal, setShowUploadModal] = useState(false)
   const navigate = useNavigate()
   const isAuthenticated = authService.isAuthenticated()
+  const currentUser = authService.getUser()
 
   const [searchParams] = useSearchParams()
   const initialQuery = searchParams.get('search') || ''
@@ -126,6 +127,16 @@ export default function Header({ onUpload, onGoLiveClick, isLive }: HeaderProps)
                     Go live
                   </button>
                 )
+              )}
+
+              {isAuthenticated && currentUser && (
+                <Link
+                  to={`/profile/${currentUser.id}`}
+                  className="w-8 h-8 rounded-full bg-red-600 text-white flex items-center justify-center text-sm font-bold hover:bg-red-700 transition-colors"
+                  title="My profile"
+                >
+                  {currentUser.name.charAt(0).toUpperCase()}
+                </Link>
               )}
 
               <button

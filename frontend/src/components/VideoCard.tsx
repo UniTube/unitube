@@ -67,7 +67,15 @@ export default function VideoCard({ video, onDelete, currentUserId }: VideoCardP
         <h3 className="font-medium text-sm text-gray-900 dark:text-zinc-100 line-clamp-2 group-hover:text-red-600 dark:group-hover:text-red-400 transition-colors">
           {video.title}
         </h3>
-        <p className="text-xs text-gray-600 dark:text-zinc-400 mt-1 truncate">{video.author}</p>
+        <p className="text-xs text-gray-600 dark:text-zinc-400 mt-1 truncate">
+          <Link
+            to={`/profile/${video.authorId}`}
+            onClick={(e) => e.stopPropagation()}
+            className="hover:text-red-600 dark:hover:text-red-400 transition-colors"
+          >
+            {video.author}
+          </Link>
+        </p>
         <p className="text-xs text-gray-500 dark:text-zinc-500 mt-0.5">
           {video.size} • {video.uploadedAt}
         </p>
