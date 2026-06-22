@@ -1,96 +1,100 @@
-import { UpdateProfileRequest, UserProfile, Video } from '../types'
+import { UpdateProfileRequest, UserProfile, VideoResponse } from '../types'
 import authService from './authService'
-import videoService from './videoService'
+import { mapVideo } from './videoService'
 
-const PROFILE_OVERRIDES_KEY = 'profile_overrides'
+const API_BASE_URL = 'http://127.0.0.1:8088/api/v1'
 
-type ProfileOverrides = Record<number, { name: string; surname: string }>
-
-function parseAuthorName(author: string): { name: string; surname: string } {
-  const parts = author.trim().split(/\s+/).filter(Boolean)
-  if (parts.length === 0) return { name: 'Unknown', surname: '' }
-  if (parts.length === 1) return { name: parts[0], surname: '' }
-  return { name: parts[0], surname: parts.slice(1).join(' ') }
-}
-
-function getProfileOverrides(): ProfileOverrides {
-  const raw = localStorage.getItem(PROFILE_OVERRIDES_KEY)
-  if (!raw) return {}
-  try {
-    return JSON.parse(raw) as ProfileOverrides
-  } catch {
-    return {}
+function mapProfile(data: UserProfile & { videos: VideoResponse[] }): UserProfile {
+  return {
+    id: data.id,
+    name: data.name,
+    surname: data.surname,
+    joinedAt: data.joinedAt,
+    videoCount: data.videoCount,
+    videos: data.videos.map(mapVideo),
   }
-}
-
-function saveProfileOverride(userId: number, data: UpdateProfileRequest): void {
-  const overrides = getProfileOverrides()
-  overrides[userId] = { name: data.name, surname: data.surname }
-  localStorage.setItem(PROFILE_OVERRIDES_KEY, JSON.stringify(overrides))
-}
-
-function earliestUploadDate(videos: Video[]): string {
-  if (videos.length === 0) return '—'
-  const sorted = [...videos].sort((a, b) => a.uploadedAt.localeCompare(b.uploadedAt))
-  return sorted[0]?.uploadedAt || '—'
 }
 
 class UserService {
-  async getProfile(userId: number): Promise<UserProfile> {
-    const allVideos = await videoService.getVideos()
-    const videos = allVideos.filter((v) => v.authorId === userId)
+  async getMyProfile(): Promise<UserProfile> {
+    const response = await authService.authenticatedFetch(`${API_BASE_URL}/users/me/profile`)
+    if (!response.ok) {
+      const error = await response.json().catch(() => ({ error: 'Failed to load profile' }))
+      throw new Error(error.error || `Failed to load profile (${response.status})`)
+    }
+    const profile = mapProfile(await response.json())
     const currentUser = authService.getUser()
-    const isOwnProfile = currentUser?.id === userId
-
-    let name = 'Unknown'
-    let surname = ''
-
-    if (isOwnProfile && currentUser) {
-      name = currentUser.name
-      surname = currentUser.surname
-    } else if (videos.length > 0) {
-      const parsed = parseAuthorName(videos[0].author)
-      name = parsed.name
-      surname = parsed.surname
+    if (currentUser) {
+      authService.saveUser({
+        ...currentUser,
+        id: profile.id,
+        name: profile.name,
+        surname: profile.surname,
+      })
     }
+    return profile
+  }
 
-    const overrides = getProfileOverrides()[userId]
-    if (overrides) {
-      name = overrides.name
-      surname = overrides.surname
+  async getProfile(userId: number): Promise<UserProfile> {
+    const response = await fetch(`${API_BASE_URL}/users/${userId}/profile`, {
+      headers: { Accept: 'application/json' },
+    })
+    if (!response.ok) {
+      const error = await response.json().catch(() => ({ error: 'User not found' }))
+      throw new Error(error.error || `Failed to load profile (${response.status})`)
     }
-
-    if (!isOwnProfile && videos.length === 0) {
-      throw new Error('User not found')
-    }
-
-    return {
-      id: userId,
-      name,
-      surname,
-      joinedAt: earliestUploadDate(videos),
-      videoCount: videos.length,
-      videos,
-    }
+    return mapProfile(await response.json())
   }
 
   async updateProfile(userId: number, data: UpdateProfileRequest): Promise<UserProfile> {
-    const currentUser = authService.getUser()
-    if (!currentUser?.id || currentUser.id !== userId) {
-      throw new Error('You can only edit your own profile')
+    const response = await authService.authenticatedFetch(
+      `${API_BASE_URL}/users/${userId}/profile`,
+      {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
+      },
+    )
+    if (!response.ok) {
+      const error = await response.json().catch(() => ({ error: 'Update failed' }))
+      throw new Error(error.error || 'Failed to update profile')
     }
 
-    authService.saveUser({
-      ...currentUser,
-      name: data.name.trim(),
-      surname: data.surname.trim(),
-    })
-    saveProfileOverride(userId, {
-      name: data.name.trim(),
-      surname: data.surname.trim(),
-    })
+    const profile = mapProfile(await response.json())
+    const currentUser = authService.getUser()
+    if (currentUser?.id === userId) {
+      authService.saveUser({
+        ...currentUser,
+        id: profile.id,
+        name: profile.name,
+        surname: profile.surname,
+      })
+    }
+    return profile
+  }
 
-    return this.getProfile(userId)
+  async updateMyProfile(data: UpdateProfileRequest): Promise<UserProfile> {
+    const response = await authService.authenticatedFetch(`${API_BASE_URL}/users/me/profile`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data),
+    })
+    if (!response.ok) {
+      const error = await response.json().catch(() => ({ error: 'Update failed' }))
+      throw new Error(error.error || 'Failed to update profile')
+    }
+
+    const profile = mapProfile(await response.json())
+    const currentUser = authService.getUser()
+    if (currentUser) {
+      authService.saveUser({
+        ...currentUser,
+        id: profile.id,
+        name: profile.name,
+        surname: profile.surname,
+      })
+    }
+    return profile
   }
 }
 

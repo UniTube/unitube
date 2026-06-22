@@ -212,7 +212,7 @@ export default function WatchVideoPage() {
               </div>
               <div>
                 <Link
-                  to={`/profile/${video.authorId}`}
+                  to={isAuthor ? '/profile/me' : `/profile/${video.authorId}`}
                   className="text-sm font-medium hover:text-red-600 dark:hover:text-red-400 transition-colors"
                 >
                   {video.author}

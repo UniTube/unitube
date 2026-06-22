@@ -43,6 +43,14 @@ func (v *VideoRepo) GetVideoByID(id uint) (*models.Video, error) {
 	return &video, nil
 }
 
+func (v *VideoRepo) GetVideosByAuthorID(authorID uint) ([]models.Video, error) {
+	var videos []models.Video
+	if err := v.Db.Preload("Author").Preload("Tags").Where("author_id = ?", authorID).Order("created_at DESC").Find(&videos).Error; err != nil {
+		return nil, err
+	}
+	return videos, nil
+}
+
 func (v *VideoRepo) DeleteVideo(id uint) error{
 	
 	if err := v.Db.Delete(&models.Video{}, id).Error; err != nil{

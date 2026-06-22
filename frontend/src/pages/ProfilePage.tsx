@@ -17,9 +17,30 @@ export default function ProfilePage() {
   const [editName, setEditName] = useState('')
   const [editSurname, setEditSurname] = useState('')
   const [saveError, setSaveError] = useState<string | null>(null)
+  const [isOwnProfile, setIsOwnProfile] = useState(false)
+  const [currentUserId, setCurrentUserId] = useState<number | null>(null)
 
-  const currentUser = authService.getUser()
-  const isOwnProfile = !!currentUser?.id && profile?.id === currentUser.id
+  useEffect(() => {
+    if (!authService.isAuthenticated()) {
+      setIsOwnProfile(false)
+      setCurrentUserId(null)
+      return
+    }
+    userService
+      .getMyProfile()
+      .then((my) => {
+        setCurrentUserId(my.id)
+        setIsOwnProfile(id === 'me' || my.id === Number(id))
+      })
+      .catch(() => {
+        setIsOwnProfile(id === 'me')
+        setCurrentUserId(null)
+      })
+  }, [id])
+
+  useEffect(() => {
+    if (!isOwnProfile) setEditing(false)
+  }, [isOwnProfile])
 
   useEffect(() => {
     if (!id) {
@@ -28,8 +49,12 @@ export default function ProfilePage() {
       return
     }
 
-    userService
-      .getProfile(Number(id))
+    const loadProfile =
+      id === 'me'
+        ? userService.getMyProfile()
+        : userService.getProfile(Number(id))
+
+    loadProfile
       .then((data) => {
         setProfile(data)
         setEditName(data.name)
@@ -40,11 +65,11 @@ export default function ProfilePage() {
   }, [id])
 
   async function handleSaveProfile() {
-    if (!profile || !editName.trim()) return
+    if (!profile || !editName.trim() || !isOwnProfile) return
     setSaving(true)
     setSaveError(null)
     try {
-      const updated = await userService.updateProfile(profile.id, {
+      const updated = await userService.updateMyProfile({
         name: editName.trim(),
         surname: editSurname.trim(),
       })
@@ -145,15 +170,9 @@ export default function ProfilePage() {
                     <>
                       <h1 className="text-2xl md:text-3xl font-bold">{displayName}</h1>
                       <p className="text-sm text-gray-500 dark:text-zinc-400 mt-1">
-                        {profile.videoCount} {profile.videoCount === 1 ? 'video' : 'videos'}
-                        {profile.joinedAt !== '—' && (
-                          <> · Active since {profile.joinedAt}</>
-                        )}
+                        Joined {profile.joinedAt} · {profile.videoCount}{' '}
+                        {profile.videoCount === 1 ? 'video' : 'videos'}
                       </p>
-                      {isOwnProfile && !editing && (
-                        <p className="text-xs text-gray-400 dark:text-zinc-500 mt-2">
-                                                  </p>
-                      )}
                       {isOwnProfile && (
                         <button
                           onClick={() => setEditing(true)}
@@ -186,7 +205,7 @@ export default function ProfilePage() {
                       key={video.id}
                       video={video}
                       onDelete={handleDeleteVideo}
-                      currentUserId={currentUser?.id ?? null}
+                      currentUserId={isOwnProfile ? currentUserId : null}
                     />
                   ))}
                 </div>

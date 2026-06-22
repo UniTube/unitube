@@ -131,7 +131,7 @@ export default function Header({ onUpload, onGoLiveClick, isLive }: HeaderProps)
 
               {isAuthenticated && currentUser && (
                 <Link
-                  to={`/profile/${currentUser.id}`}
+                  to="/profile/me"
                   className="w-8 h-8 rounded-full bg-red-600 text-white flex items-center justify-center text-sm font-bold hover:bg-red-700 transition-colors"
                   title="My profile"
                 >

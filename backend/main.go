@@ -19,11 +19,13 @@ import (
 // @BasePath /api/v1
 func main() {
 	db := config.ConnectDB()
-	userService := services.NewUserService(repositories.NewUserRepo(db))
+	userRepo := repositories.NewUserRepo(db)
+	videoRepo := repositories.NewVideoRepo(db)
+	videoService := services.NewVideoService(videoRepo)
+	userService := services.NewUserService(userRepo, videoService)
 	userController := controllers.NewUserController(userService)
-	videoService := services.NewVideoService(repositories.NewVideoRepo(db))
-	videoController := controllers.NewVideoController(videoService)
-	commentService := services.NewCommentService(repositories.NewCommentRepo(db), repositories.NewVideoRepo(db), repositories.NewUserRepo(db))
+	videoController := controllers.NewVideoController(videoService, userService)
+	commentService := services.NewCommentService(repositories.NewCommentRepo(db), videoRepo, userRepo)
 	commentController := controllers.NewCommentController(commentService)
 	router := gin.Default()
 	router.Use(cors.New(cors.Config{

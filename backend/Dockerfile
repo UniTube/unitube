@@ -4,7 +4,7 @@ WORKDIR /backend
 
 COPY . .
 
-RUN go mod init backend
+RUN test -f go.mod || go mod init backend
 RUN go get github.com/gin-gonic/gin@v1.9.1
 RUN go get gorm.io/gorm@v1.25.0
 RUN go get gorm.io/driver/postgres@v1.5.0
