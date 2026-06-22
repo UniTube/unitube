@@ -9,11 +9,9 @@ import (
 	"backend/routes"
 	"backend/services"
 
-	"net/http"
-
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
-	"github.com/prometheus/client_golang/prometheus/promhttp"
+	"github.com/penglongli/gin-metrics/ginmetrics"
 	swaggerfiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
 )
@@ -75,10 +73,14 @@ func main() {
 	router.GET("/sse", controllers.SSEHandler)
 
 	// Prometheus metrics endpoint
+	// get global Monitor object
+	m := ginmetrics.GetMonitor()
+	metricRouter := gin.Default()
+	m.Expose(metricRouter)
+
 	go func(){
-		metrics := http.NewServeMux()
-		metrics.Handle("/metrics", promhttp.Handler())
-		http.ListenAndServe(":2112", metrics)
+		
+		_=metricRouter.Run(":8089")
 	}()
 
 	
