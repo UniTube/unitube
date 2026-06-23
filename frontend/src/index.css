@@ -3,6 +3,41 @@
 /* Class-based dark mode for Tailwind v4 */
 @custom-variant dark (&:where(.dark, .dark *));
 
+/* ─── PWA Native-Feel Globals ────────────────────────────────────────────────
+   These rules eliminate browser-specific friction that makes web apps feel
+   less native (tap delay, highlight flash, accidental text selection, etc.)
+   ───────────────────────────────────────────────────────────────────────── */
+
+/* Smooth scrolling across the whole app */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Remove the blue flash that appears on Android when tapping elements */
+* {
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Buttons and links: remove tap delay (eliminates 300ms delay on touch devices) */
+button,
+a,
+[role='button'],
+input[type='submit'],
+input[type='button'],
+label {
+  touch-action: manipulation;
+  /* Prevent text from being accidentally selected during a tap */
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+/* Smooth momentum scrolling on iOS Safari for scrollable containers */
+.scroll-smooth-ios {
+  -webkit-overflow-scrolling: touch;
+}
+
+/* ─── Animations ──────────────────────────────────────────────────────────── */
+
 @keyframes slide-in {
   from {
     opacity: 0;

@@ -6,6 +6,7 @@ import LivePage from './pages/LivePage'
 import LoginPage from './pages/LoginPage'
 import { Video } from './types'
 import RegisterPage from './pages/RegisterPage'
+import OfflineBanner from './components/OfflineBanner'
 
 export default function App() {
   const [, setVideos] = useState<Video[]>([])
@@ -32,32 +33,36 @@ export default function App() {
   }
 
   return (
-    <Routes>
-      <Route path="/login" element={<LoginPage />} />
-      <Route
-        path="/"
-        element={
-          <HomePage
-            isLive={!!stream}
-            onUpload={handleUpload}
-            onDelete={handleDelete}
-            onGoLive={handleGoLive}
-          />
-        }
-      />
-      <Route path="/watch/:id" element={<WatchVideoPage />} />
-      <Route
-        path="/live"
-        element={
-          <LivePage
-            stream={stream}
-            title={liveTitle}
-            onEnd={handleEndStream}
-            onRecordingSaved={(video) => handleUpload([video])}
-          />
-        }
-      />
-      <Route path="/register" element={<RegisterPage />} />
-    </Routes>
+    <>
+      <Routes>
+        <Route path="/login" element={<LoginPage />} />
+        <Route
+          path="/"
+          element={
+            <HomePage
+              isLive={!!stream}
+              onUpload={handleUpload}
+              onDelete={handleDelete}
+              onGoLive={handleGoLive}
+            />
+          }
+        />
+        <Route path="/watch/:id" element={<WatchVideoPage />} />
+        <Route
+          path="/live"
+          element={
+            <LivePage
+              stream={stream}
+              title={liveTitle}
+              onEnd={handleEndStream}
+              onRecordingSaved={(video) => handleUpload([video])}
+            />
+          }
+        />
+        <Route path="/register" element={<RegisterPage />} />
+      </Routes>
+      {/* PWA: shows a sticky banner at the bottom whenever the user is offline */}
+      <OfflineBanner />
+    </>
   )
 }

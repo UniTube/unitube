@@ -4,6 +4,7 @@ import { useTheme } from '../context/ThemeContext'
 import UploadVideoModal from './UploadVideoModal'
 import authService from '../services/authService'
 import { Video } from '../types'
+import { useInstallPWA } from '../hooks/useInstallPWA'
 
 interface HeaderProps {
   onUpload?: (video: Video) => void
@@ -13,6 +14,7 @@ interface HeaderProps {
 
 export default function Header({ onUpload, onGoLiveClick, isLive }: HeaderProps) {
   const { theme, toggle } = useTheme()
+  const { canInstall, install } = useInstallPWA()
 
   const [showUploadModal, setShowUploadModal] = useState(false)
   const navigate = useNavigate()
@@ -86,6 +88,20 @@ export default function Header({ onUpload, onGoLiveClick, isLive }: HeaderProps)
         </button>
       </form>
       <div className="flex items-center gap-2 sm:gap-3 shrink-0">
+        {/* PWA Install button — only shown when browser fires beforeinstallprompt */}
+        {canInstall && (
+          <button
+            id="pwa-install-btn"
+            onClick={install}
+            title="Install UniTube app"
+            aria-label="Install UniTube as an app"
+            className="hidden sm:flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-lg bg-red-50 dark:bg-zinc-800 text-red-600 dark:text-red-400 border border-red-200 dark:border-zinc-700 hover:bg-red-100 dark:hover:bg-zinc-700 transition-colors"
+          >
+            <InstallIcon />
+            Install
+          </button>
+        )}
+
         {/* Theme toggle */}
         <button
           onClick={toggle}
@@ -272,6 +288,26 @@ function ClearIcon() {
     >
       <line x1="18" y1="6" x2="6" y2="18" />
       <line x1="6" y1="6" x2="18" y2="18" />
+    </svg>
+  )
+}
+
+function InstallIcon() {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={2}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className="w-3.5 h-3.5"
+      aria-hidden="true"
+    >
+      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+      <polyline points="7 10 12 15 17 10" />
+      <line x1="12" y1="15" x2="12" y2="3" />
     </svg>
   )
 }
