@@ -211,7 +211,12 @@ export default function WatchVideoPage() {
                 {video.author.charAt(0).toUpperCase()}
               </div>
               <div>
-                <p className="text-sm font-medium">{video.author}</p>
+                <Link
+                  to={isAuthor ? '/profile/me' : `/profile/${video.authorId}`}
+                  className="text-sm font-medium hover:text-red-600 dark:hover:text-red-400 transition-colors"
+                >
+                  {video.author}
+                </Link>
                 <p className="text-xs text-gray-500 dark:text-zinc-500">
                   {formatDate(video.uploadedAt)}
                 </p>

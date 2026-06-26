@@ -44,7 +44,8 @@ func setupRouter() *gin.Engine {
 
 func setupVideoRoutes(router *gin.Engine) *gin.Engine {
 	videoService := services.NewVideoService(repositories.NewVideoRepo(testDB))
-	videoController := controllers.NewVideoController(videoService)
+	userService := services.NewUserService(repositories.NewUserRepo(testDB), videoService)
+	videoController := controllers.NewVideoController(videoService, userService)
 	
 	// Set dummy JWT secret for tests
 	os.Setenv("JWT_SECRET", "test_secret")

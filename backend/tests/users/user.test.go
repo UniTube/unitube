@@ -39,7 +39,8 @@ func setupRouter() *gin.Engine {
 }
 
 func setupUserRoutes(router *gin.Engine) *gin.Engine {
-	userService := services.NewUserService(repositories.NewUserRepo(testDB))
+	videoService := services.NewVideoService(repositories.NewVideoRepo(testDB))
+	userService := services.NewUserService(repositories.NewUserRepo(testDB), videoService)
 	userController := controllers.NewUserController(userService)
 	
 	// Set dummy JWT secret for tests

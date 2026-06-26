@@ -3,6 +3,7 @@ package controllers
 import (
 	"backend/dtos"
 	"backend/hub"
+	"backend/middlewares"
 	"backend/services"
 	"fmt"
 	"mime/multipart"
@@ -19,10 +20,11 @@ import (
 
 type VideoController struct {
 	videoService *services.VideoService
+	userService  *services.UserService
 }
 
-func NewVideoController(videoService *services.VideoService) *VideoController {
-	return &VideoController{videoService: videoService}
+func NewVideoController(videoService *services.VideoService, userService *services.UserService) *VideoController {
+	return &VideoController{videoService: videoService, userService: userService}
 }
 
 // CreateVideo godoc
@@ -73,15 +75,26 @@ func (c *VideoController) CreateVideo(ctx *gin.Context) {
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to detect MIME type"})
 		return
 	}
-	authorId, _ := strconv.Atoi(ctx.PostForm("authorId"))
+
+	email, err := middlewares.GetAuthenticatedEmail(ctx)
+	if err != nil {
+		ctx.JSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
+		return
+	}
+	author, err := c.userService.GetUserByEmail(email)
+	if err != nil {
+		ctx.JSON(http.StatusUnauthorized, gin.H{"error": "User not found"})
+		return
+	}
+
 	videoDTO := dtos.VideoDTO{
 		Title:       ctx.PostForm("title"),
 		Description: ctx.PostForm("description"),
 		Size:        file.Size,
 		URL:         dst,
-		MimeType:   mimeType,
+		MimeType:    mimeType,
 		UploadAt:    time.Now().String(),
-		AuthorID:    uint(authorId),
+		AuthorID:    author.ID,
 		Tags:        ctx.PostFormArray("tags"),
 	}
 
