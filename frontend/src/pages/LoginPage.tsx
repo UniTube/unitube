@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import authService from '../services/authService'
+import userService from '../services/userService'
 
 export default function LoginPage() {
   const [email, setEmail] = useState('')
@@ -20,6 +21,11 @@ export default function LoginPage() {
       const response = await authService.login({ email, password })
       authService.saveToken(response.token)
       authService.saveUser(response.user)
+      try {
+        await userService.getMyProfile()
+      } catch {
+        // Profile sync is best-effort; login response already has user data
+      }
       navigate('/')
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Verbindung fehlgeschlagen')

@@ -51,11 +51,18 @@ export default function HomePage({ isLive, onUpload, onDelete, onGoLive }: HomeP
   const location = useLocation()
 
   useEffect(() => {
-    const newVideo = (location.state as { newVideo?: Video } | null)?.newVideo
-    if (!newVideo) return
-    setVideos((prev) => (prev.some((v) => v.id === newVideo.id) ? prev : [newVideo, ...prev]))
-    onUpload([newVideo])
-    navigate('.', { replace: true, state: {} })
+    const state = location.state as { newVideo?: Video; triggerGoLive?: boolean } | null
+    if (!state) return
+
+    if (state.newVideo) {
+      const newVideo = state.newVideo
+      setVideos((prev) => (prev.some((v) => v.id === newVideo.id) ? prev : [newVideo, ...prev]))
+      onUpload([newVideo])
+      navigate('.', { replace: true, state: {} })
+    } else if (state.triggerGoLive) {
+      setShowGoLiveModal(true)
+      navigate('.', { replace: true, state: {} })
+    }
   }, [location.state, navigate, onUpload])
 
   useEffect(() => {

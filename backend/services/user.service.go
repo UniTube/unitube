@@ -15,11 +15,12 @@ import (
 
 
 type UserService struct {
-	repo *repositories.UserRepo
+	repo         *repositories.UserRepo
+	videoService *VideoService
 }
 
-func NewUserService(repo *repositories.UserRepo) *UserService {
-	return &UserService{repo: repo}
+func NewUserService(repo *repositories.UserRepo, videoService *VideoService) *UserService {
+	return &UserService{repo: repo, videoService: videoService}
 }
 
 
@@ -121,6 +122,42 @@ func (userService *UserService) AuthenticateUser(email, password string) (error,
 		Surname: user.Surname,
 		Email:   user.Email,
 	}}
+}
+
+func (userService *UserService) GetUserProfile(id uint) (*dtos.UserProfileDTO, error) {
+	user, err := userService.repo.GetUserByID(id)
+	if err != nil {
+		return nil, err
+	}
+
+	videos, err := userService.videoService.GetVideosByAuthorID(id)
+	if err != nil {
+		return nil, err
+	}
+
+	return &dtos.UserProfileDTO{
+		ID:         user.ID,
+		Name:       user.Name,
+		Surname:    user.Surname,
+		JoinedAt:   user.CreatedAt.Format("2006-01-02"),
+		VideoCount: len(videos),
+		Videos:     videos,
+	}, nil
+}
+
+func (userService *UserService) UpdateProfile(id uint, profile *dtos.UpdateProfileDTO) (*dtos.UserProfileDTO, error) {
+	user, err := userService.repo.GetUserByID(id)
+	if err != nil {
+		return nil, err
+	}
+
+	user.Name = profile.Name
+	user.Surname = profile.Surname
+	if err := userService.repo.UpdateUser(user); err != nil {
+		return nil, err
+	}
+
+	return userService.GetUserProfile(id)
 }
 
 func (userService *UserService) GetUserByEmail(email string) (*dtos.UserDTO, error) {

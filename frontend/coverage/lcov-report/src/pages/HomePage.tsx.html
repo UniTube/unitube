@@ -23,16 +23,16 @@
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">64.34% </span>
+                <span class="strong">61.94% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>83/129</span>
+                <span class='fraction'>83/134</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">63.63% </span>
+                <span class="strong">60.49% </span>
                 <span class="quiet">Branches</span>
-                <span class='fraction'>49/77</span>
+                <span class='fraction'>49/81</span>
             </div>
         
             
@@ -44,9 +44,9 @@
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">67.52% </span>
+                <span class="strong">64.75% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>79/117</span>
+                <span class='fraction'>79/122</span>
             </div>
         
             
@@ -416,7 +416,14 @@
 <a name='L351'></a><a href='#L351'>351</a>
 <a name='L352'></a><a href='#L352'>352</a>
 <a name='L353'></a><a href='#L353'>353</a>
-<a name='L354'></a><a href='#L354'>354</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+<a name='L354'></a><a href='#L354'>354</a>
+<a name='L355'></a><a href='#L355'>355</a>
+<a name='L356'></a><a href='#L356'>356</a>
+<a name='L357'></a><a href='#L357'>357</a>
+<a name='L358'></a><a href='#L358'>358</a>
+<a name='L359'></a><a href='#L359'>359</a>
+<a name='L360'></a><a href='#L360'>360</a>
+<a name='L361'></a><a href='#L361'>361</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -471,9 +478,16 @@
 <span class="cline-any cline-yes">19x</span>
 <span class="cline-any cline-yes">6x</span>
 <span class="cline-any cline-yes">6x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">19x</span>
@@ -822,11 +836,18 @@ export default function HomePage({ isLive, onUpload, onDelete, onGoLive }: HomeP
   const location = useLocation()
 &nbsp;
   useEffect(() =&gt; {
-    const newVideo = (location.state as { newVideo?: Video } | null)?.newVideo
-    <span class="missing-if-branch" title="else path not taken" >E</span>if (!newVideo) return
-<span class="cstat-no" title="statement not covered" >    setVideos(<span class="fstat-no" title="function not covered" >(p</span>rev) =&gt; (<span class="cstat-no" title="statement not covered" >prev.some(<span class="fstat-no" title="function not covered" >(v</span>) =&gt; <span class="cstat-no" title="statement not covered" >v.id === newVideo.id)</span> ? prev : [newVideo, ...prev])</span>)</span>
-<span class="cstat-no" title="statement not covered" >    onUpload([newVideo])</span>
-<span class="cstat-no" title="statement not covered" >    navigate('.', { replace: true, state: {} })</span>
+    const state = location.state as { newVideo?: Video; triggerGoLive?: boolean } | null
+    <span class="missing-if-branch" title="else path not taken" >E</span>if (!state) return
+&nbsp;
+<span class="cstat-no" title="statement not covered" >    if (state.newVideo) {</span>
+      const newVideo = <span class="cstat-no" title="statement not covered" >state.newVideo</span>
+<span class="cstat-no" title="statement not covered" >      setVideos(<span class="fstat-no" title="function not covered" >(p</span>rev) =&gt; (<span class="cstat-no" title="statement not covered" >prev.some(<span class="fstat-no" title="function not covered" >(v</span>) =&gt; <span class="cstat-no" title="statement not covered" >v.id === newVideo.id)</span> ? prev : [newVideo, ...prev])</span>)</span>
+<span class="cstat-no" title="statement not covered" >      onUpload([newVideo])</span>
+<span class="cstat-no" title="statement not covered" >      navigate('.', { replace: true, state: {} })</span>
+    } else <span class="cstat-no" title="statement not covered" >if (state.triggerGoLive) {</span>
+<span class="cstat-no" title="statement not covered" >      setShowGoLiveModal(true)</span>
+<span class="cstat-no" title="statement not covered" >      navigate('.', { replace: true, state: {} })</span>
+    }
   }, [location.state, navigate, onUpload])
 &nbsp;
   useEffect(() =&gt; {
@@ -1129,7 +1150,7 @@ export default function HomePage({ isLive, onUpload, onDelete, onGoLive }: HomeP
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2026-06-21T16:11:23.634Z
+                at 2026-06-27T07:03:26.776Z
             </div>
         <script src="../../prettify.js"></script>
         <script>

@@ -6,6 +6,9 @@ import LivePage from './pages/LivePage'
 import LoginPage from './pages/LoginPage'
 import { Video } from './types'
 import RegisterPage from './pages/RegisterPage'
+import ProfilePage from './pages/ProfilePage'
+import PlaylistsPage from './pages/PlaylistsPage'
+import PlaylistDetailPage from './pages/PlaylistDetailPage'
 import OfflineBanner from './components/OfflineBanner'
 
 export default function App() {
@@ -60,6 +63,9 @@ export default function App() {
           }
         />
         <Route path="/register" element={<RegisterPage />} />
+        <Route path="/profile/:id" element={<ProfilePage />} />
+        <Route path="/playlists" element={<PlaylistsPage />} />
+        <Route path="/playlists/:id" element={<PlaylistDetailPage />} />
       </Routes>
       {/* PWA: shows a sticky banner at the bottom whenever the user is offline */}
       <OfflineBanner />

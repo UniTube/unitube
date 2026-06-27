@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"backend/dtos"
+	"backend/middlewares"
 	"backend/services"
 	"fmt"
 	"net/http"
@@ -38,7 +39,13 @@ func (c *UserController) CreateUser(ctx *gin.Context) {
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error(), "message": message})
 		return
 	}
-	userDTO.Password = "" // Clear the password before returning the response
+	created, err := c.userService.GetUserByEmail(userDTO.Email)
+	if err == nil {
+		userDTO.ID = created.ID
+		userDTO.Name = created.Name
+		userDTO.Surname = created.Surname
+	}
+	userDTO.Password = ""
 	ctx.JSON(http.StatusCreated, userDTO)
 }
 
@@ -65,7 +72,133 @@ func (c *UserController) GetUserByID(ctx *gin.Context) {
 		ctx.JSON(http.StatusNotFound, gin.H{"error": "User not found"})
 		return
 	}
+	userDTO.Password = ""
 	ctx.JSON(http.StatusOK, userDTO)
+}
+
+// GetUserProfile godoc
+// @Summary Get a user's public profile
+// @Description Retrieve a user's profile with their uploaded videos
+// @Tags users
+// @Produce json
+// @Param id path integer true "User ID"
+// @Success 200 {object} dtos.UserProfileDTO
+// @Failure 400 {object} map[string]string
+// @Failure 404 {object} map[string]string
+// @Router /users/{id}/profile [get]
+func (c *UserController) GetUserProfile(ctx *gin.Context) {
+	idParam := ctx.Param("id")
+	var id uint
+	if _, err := fmt.Sscanf(idParam, "%d", &id); err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": "Invalid user ID"})
+		return
+	}
+
+	profile, err := c.userService.GetUserProfile(id)
+	if err != nil {
+		ctx.JSON(http.StatusNotFound, gin.H{"error": "User not found"})
+		return
+	}
+
+	ctx.JSON(http.StatusOK, profile)
+}
+
+// UpdateProfile godoc
+// @Summary Update the authenticated user's profile
+// @Description Update name and surname for the logged-in user
+// @Tags users
+// @Accept json
+// @Produce json
+// @Param id path integer true "User ID"
+// @Param profile body dtos.UpdateProfileDTO true "Profile fields"
+// @Success 200 {object} dtos.UserProfileDTO
+// @Failure 400 {object} map[string]string
+// @Failure 403 {object} map[string]string
+// @Failure 404 {object} map[string]string
+// @Router /users/{id}/profile [put]
+func (c *UserController) UpdateProfile(ctx *gin.Context) {
+	idParam := ctx.Param("id")
+	var id uint
+	if _, err := fmt.Sscanf(idParam, "%d", &id); err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": "Invalid user ID"})
+		return
+	}
+
+	email, err := middlewares.GetAuthenticatedEmail(ctx)
+	if err != nil {
+		ctx.JSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
+		return
+	}
+
+	currentUser, err := c.userService.GetUserByEmail(email)
+	if err != nil || currentUser.ID != id {
+		ctx.JSON(http.StatusForbidden, gin.H{"error": "You can only edit your own profile"})
+		return
+	}
+
+	var profileDTO dtos.UpdateProfileDTO
+	if err := ctx.ShouldBindJSON(&profileDTO); err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	profile, err := c.userService.UpdateProfile(id, &profileDTO)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	ctx.JSON(http.StatusOK, profile)
+}
+
+func (c *UserController) GetMyProfile(ctx *gin.Context) {
+	email, err := middlewares.GetAuthenticatedEmail(ctx)
+	if err != nil {
+		ctx.JSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
+		return
+	}
+
+	currentUser, err := c.userService.GetUserByEmail(email)
+	if err != nil {
+		ctx.JSON(http.StatusNotFound, gin.H{"error": "User not found"})
+		return
+	}
+
+	profile, err := c.userService.GetUserProfile(currentUser.ID)
+	if err != nil {
+		ctx.JSON(http.StatusNotFound, gin.H{"error": "User not found"})
+		return
+	}
+
+	ctx.JSON(http.StatusOK, profile)
+}
+
+func (c *UserController) UpdateMyProfile(ctx *gin.Context) {
+	email, err := middlewares.GetAuthenticatedEmail(ctx)
+	if err != nil {
+		ctx.JSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
+		return
+	}
+
+	currentUser, err := c.userService.GetUserByEmail(email)
+	if err != nil {
+		ctx.JSON(http.StatusNotFound, gin.H{"error": "User not found"})
+		return
+	}
+
+	var profileDTO dtos.UpdateProfileDTO
+	if err := ctx.ShouldBindJSON(&profileDTO); err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	profile, err := c.userService.UpdateProfile(currentUser.ID, &profileDTO)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	ctx.JSON(http.StatusOK, profile)
 }
 
 // UpdateUser godoc

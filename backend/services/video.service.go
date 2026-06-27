@@ -108,6 +108,19 @@ func (v *VideoService) toVideoResponse(video *models.Video) *dtos.VideoResponseD
 	}
 }
 
+func (v *VideoService) GetVideosByAuthorID(authorID uint) ([]dtos.VideoResponseDTO, error) {
+	videos, err := v.repo.GetVideosByAuthorID(authorID)
+	if err != nil {
+		return nil, err
+	}
+
+	videoDTOs := make([]dtos.VideoResponseDTO, len(videos))
+	for i, video := range videos {
+		videoDTOs[i] = *v.toVideoResponse(&video)
+	}
+	return videoDTOs, nil
+}
+
 func (v *VideoService) FilterVideos(name string, tags []string) ([]dtos.VideoResponseDTO, error) {
 	videos, err := v.repo.Filter(name, tags)
 	if err != nil {

@@ -1,8 +1,9 @@
 import { useParams, Link, useNavigate } from 'react-router-dom'
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import Header from '../components/Header'
 import VideoPlayer from '../components/VideoPlayer'
 import EditVideoModal from '../components/EditVideoModal'
+import AddToPlaylistModal from '../components/AddToPlaylistModal'
 import videoService from '../services/videoService'
 import authService from '../services/authService'
 import { Video, Comment } from '../types'
@@ -39,7 +40,12 @@ export default function WatchVideoPage() {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [liked, setLiked] = useState(false)
 
+  // More (⋮) menu
+  const [showMoreMenu, setShowMoreMenu] = useState(false)
+  const moreMenuRef = useRef<HTMLDivElement>(null)
+
   const currentUser = authService.getUser()
+  const isAuthenticated = authService.isAuthenticated()
   const isAuthor = !!currentUser && !!video && video.authorId === currentUser.id
 
   useEffect(() => {
@@ -74,6 +80,18 @@ export default function WatchVideoPage() {
       .then(setComments)
       .catch(() => {})
   }, [video?.id])
+
+  // Close More menu on outside click
+  useEffect(() => {
+    if (!showMoreMenu) return
+    function handleOutside(e: MouseEvent) {
+      if (moreMenuRef.current && !moreMenuRef.current.contains(e.target as Node)) {
+        setShowMoreMenu(false)
+      }
+    }
+    document.addEventListener('mousedown', handleOutside)
+    return () => document.removeEventListener('mousedown', handleOutside)
+  }, [showMoreMenu])
 
   const handleLike = async () => {
     if (liked || !video) return
@@ -202,6 +220,30 @@ export default function WatchVideoPage() {
                   </button>
                 </>
               )}
+
+              {/* ⋮ More button — shown to authenticated users */}
+              {isAuthenticated && (
+                <div className="relative" ref={moreMenuRef}>
+                  <button
+                    id="more-options-btn"
+                    onClick={() => setShowMoreMenu((v) => !v)}
+                    aria-label="More options"
+                    aria-haspopup="true"
+                    aria-expanded={showMoreMenu}
+                    className="flex items-center justify-center w-8 h-8 rounded-full text-gray-600 dark:text-zinc-400 hover:text-red-600 dark:hover:text-red-400 border border-gray-200 dark:border-zinc-700 hover:border-red-300 dark:hover:border-red-800 hover:bg-red-50 dark:hover:bg-zinc-800 transition-all"
+                    title="More options"
+                  >
+                    <DotsVerticalIcon />
+                  </button>
+
+                  {showMoreMenu && (
+                    <AddToPlaylistModal
+                      videoId={video.id}
+                      onClose={() => setShowMoreMenu(false)}
+                    />
+                  )}
+                </div>
+              )}
             </div>
           </div>
 
@@ -211,7 +253,12 @@ export default function WatchVideoPage() {
                 {video.author.charAt(0).toUpperCase()}
               </div>
               <div>
-                <p className="text-sm font-medium">{video.author}</p>
+                <Link
+                  to={isAuthor ? '/profile/me' : `/profile/${video.authorId}`}
+                  className="text-sm font-medium hover:text-red-600 dark:hover:text-red-400 transition-colors"
+                >
+                  {video.author}
+                </Link>
                 <p className="text-xs text-gray-500 dark:text-zinc-500">
                   {formatDate(video.uploadedAt)}
                 </p>
@@ -368,6 +415,20 @@ function ThumbUpIcon({ filled }: { filled: boolean }) {
     >
       <path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3H14z" />
       <path d="M7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3" />
+    </svg>
+  )
+}
+
+function DotsVerticalIcon() {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="currentColor"
+      className="w-4 h-4"
+    >
+      <circle cx="12" cy="5" r="1.5" />
+      <circle cx="12" cy="12" r="1.5" />
+      <circle cx="12" cy="19" r="1.5" />
     </svg>
   )
 }

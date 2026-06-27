@@ -27,6 +27,12 @@ describe('Header', () => {
   beforeEach(() => {
     jest.clearAllMocks()
     mockSearchParams = new URLSearchParams()
+    ;(authService.getUser as jest.Mock).mockReturnValue({
+      id: 1,
+      name: 'John',
+      surname: 'Doe',
+      email: 'john.doe@example.com',
+    })
   })
 
   test('renders Sign In link when user is unauthenticated', () => {
@@ -47,6 +53,11 @@ describe('Header', () => {
 
     expect(screen.getByRole('button', { name: /upload video/i })).toBeInTheDocument()
     expect(screen.getByRole('button', { name: /go live/i })).toBeInTheDocument()
+
+    // Open dropdown to find logout
+    const accountMenuBtn = screen.getByTitle('Account menu')
+    fireEvent.click(accountMenuBtn)
+
     expect(screen.getByRole('button', { name: /logout/i })).toBeInTheDocument()
     expect(screen.queryByText(/sign in/i)).not.toBeInTheDocument()
   })
@@ -86,10 +97,14 @@ describe('Header', () => {
 
     render(<Header onUpload={jest.fn()} />)
 
+    // Open dropdown to find logout
+    const accountMenuBtn = screen.getByTitle('Account menu')
+    fireEvent.click(accountMenuBtn)
+
     const logoutBtn = screen.getByRole('button', { name: /logout/i })
     fireEvent.click(logoutBtn)
 
-    expect(authService.removeToken).toHaveBeenCalled()
+    expect(authService.logout).toHaveBeenCalled()
     expect(mockNavigate).toHaveBeenCalledWith('/login')
   })
 })

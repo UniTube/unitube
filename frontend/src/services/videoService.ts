@@ -63,7 +63,18 @@ class VideoService {
       )
     }
 
-    return mapVideo(await response.json())
+    const mapped = mapVideo(await response.json())
+    const currentUser = authService.getUser()
+    if (currentUser) {
+      const [firstName, ...rest] = (mapped.author || '').split(' ')
+      authService.saveUser({
+        ...currentUser,
+        id: mapped.authorId,
+        name: firstName || currentUser.name,
+        surname: rest.join(' ') || currentUser.surname,
+      })
+    }
+    return mapped
   }
 
   async getVideos(): Promise<UploadVideoResponse[]> {

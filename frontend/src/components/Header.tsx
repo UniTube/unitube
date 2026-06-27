@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { useTheme } from '../context/ThemeContext'
 import UploadVideoModal from './UploadVideoModal'
@@ -17,19 +17,36 @@ export default function Header({ onUpload, onGoLiveClick, isLive }: HeaderProps)
   const { canInstall, install } = useInstallPWA()
 
   const [showUploadModal, setShowUploadModal] = useState(false)
+  const [showProfileMenu, setShowProfileMenu] = useState(false)
   const navigate = useNavigate()
   const isAuthenticated = authService.isAuthenticated()
+  const currentUser = authService.getUser()
 
   const [searchParams] = useSearchParams()
   const initialQuery = searchParams.get('search') || ''
   const [searchQuery, setSearchQuery] = useState(initialQuery)
 
+  const profileMenuRef = useRef<HTMLDivElement>(null)
+
   useEffect(() => {
     setSearchQuery(searchParams.get('search') || '')
   }, [searchParams])
 
+  // Close profile dropdown on outside click
+  useEffect(() => {
+    if (!showProfileMenu) return
+    function handleOutside(e: MouseEvent) {
+      if (profileMenuRef.current && !profileMenuRef.current.contains(e.target as Node)) {
+        setShowProfileMenu(false)
+      }
+    }
+    document.addEventListener('mousedown', handleOutside)
+    return () => document.removeEventListener('mousedown', handleOutside)
+  }, [showProfileMenu])
+
   function handleLogout() {
     authService.logout()
+    setShowProfileMenu(false)
     navigate('/login')
   }
 
@@ -112,17 +129,15 @@ export default function Header({ onUpload, onGoLiveClick, isLive }: HeaderProps)
         </button>
 
         <div className="flex items-center gap-3">
-          {(onUpload || onGoLiveClick) && isAuthenticated && (
+          {isAuthenticated && (
             <>
-              {onUpload && (
-                <button
-                  onClick={() => setShowUploadModal(true)}
-                  className="flex items-center gap-2 bg-red-600 hover:bg-red-700 active:bg-red-800 text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors"
-                >
-                  <UploadIcon />
-                  Upload video
-                </button>
-              )}
+              <button
+                onClick={() => setShowUploadModal(true)}
+                className="flex items-center gap-2 bg-red-600 hover:bg-red-700 active:bg-red-800 text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors"
+              >
+                <UploadIcon />
+                Upload video
+              </button>
 
               {isLive ? (
                 <Link
@@ -133,23 +148,77 @@ export default function Header({ onUpload, onGoLiveClick, isLive }: HeaderProps)
                   You are live
                 </Link>
               ) : (
-                onGoLiveClick && (
-                  <button
-                    onClick={onGoLiveClick}
-                    className="flex items-center gap-2 bg-white dark:bg-zinc-800 hover:bg-red-50 dark:hover:bg-zinc-700 text-red-600 dark:text-red-400 border border-red-200 dark:border-zinc-700 text-sm font-medium px-4 py-2 rounded-lg transition-colors"
-                  >
-                    <span className="inline-block w-2 h-2 rounded-full bg-red-500" />
-                    Go live
-                  </button>
-                )
+                <button
+                  onClick={onGoLiveClick || (() => navigate('/', { state: { triggerGoLive: true } }))}
+                  className="flex items-center gap-2 bg-white dark:bg-zinc-800 hover:bg-red-50 dark:hover:bg-zinc-700 text-red-600 dark:text-red-400 border border-red-200 dark:border-zinc-700 text-sm font-medium px-4 py-2 rounded-lg transition-colors"
+                >
+                  <span className="inline-block w-2 h-2 rounded-full bg-red-500" />
+                  Go live
+                </button>
               )}
 
-              <button
-                onClick={handleLogout}
-                className="text-gray-600 dark:text-zinc-400 hover:text-red-600 dark:hover:text-red-400 text-sm font-medium px-3 py-2 rounded-lg transition-colors"
-              >
-                Logout
-              </button>
+              {/* Profile avatar with dropdown */}
+              {currentUser && (
+                <div className="relative" ref={profileMenuRef}>
+                  <button
+                    id="profile-menu-btn"
+                    onClick={() => setShowProfileMenu((v) => !v)}
+                    aria-haspopup="true"
+                    aria-expanded={showProfileMenu}
+                    className="w-9 h-9 rounded-full bg-gradient-to-br from-red-500 to-red-700 text-white flex items-center justify-center text-sm font-bold hover:from-red-600 hover:to-red-800 transition-all shadow-md ring-2 ring-transparent hover:ring-red-300 dark:hover:ring-red-800 focus:outline-none focus:ring-red-400"
+                    title="Account menu"
+                  >
+                    {currentUser.name.charAt(0).toUpperCase()}
+                  </button>
+
+                  {showProfileMenu && (
+                    <div
+                      className="absolute right-0 mt-2 w-52 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded-xl shadow-xl overflow-hidden z-50"
+                      style={{ animation: 'dropdownFadeIn 0.15s ease-out forwards' }}
+                    >
+                      {/* User info header */}
+                      <div className="px-4 py-3 border-b border-zinc-100 dark:border-zinc-800">
+                        <p className="text-sm font-semibold text-zinc-900 dark:text-zinc-100 truncate">
+                          {currentUser.name} {currentUser.surname}
+                        </p>
+                        <p className="text-xs text-zinc-500 dark:text-zinc-400 truncate mt-0.5">
+                          {currentUser.email}
+                        </p>
+                      </div>
+
+                      {/* Menu items */}
+                      <div className="py-1">
+                        <Link
+                          to="/profile/me"
+                          onClick={() => setShowProfileMenu(false)}
+                          className="flex items-center gap-3 px-4 py-2.5 text-sm text-zinc-700 dark:text-zinc-300 hover:bg-red-50 dark:hover:bg-zinc-800 hover:text-red-600 dark:hover:text-red-400 transition-colors"
+                        >
+                          <UserIcon />
+                          My Profile
+                        </Link>
+                        <Link
+                          to="/playlists"
+                          onClick={() => setShowProfileMenu(false)}
+                          className="flex items-center gap-3 px-4 py-2.5 text-sm text-zinc-700 dark:text-zinc-300 hover:bg-red-50 dark:hover:bg-zinc-800 hover:text-red-600 dark:hover:text-red-400 transition-colors"
+                        >
+                          <PlaylistIcon />
+                          My Playlists
+                        </Link>
+                      </div>
+
+                      <div className="border-t border-zinc-100 dark:border-zinc-800 py-1">
+                        <button
+                          onClick={handleLogout}
+                          className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-zinc-700 dark:text-zinc-300 hover:bg-red-50 dark:hover:bg-zinc-800 hover:text-red-600 dark:hover:text-red-400 transition-colors"
+                        >
+                          <LogoutIcon />
+                          Logout
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
             </>
           )}
 
@@ -163,15 +232,26 @@ export default function Header({ onUpload, onGoLiveClick, isLive }: HeaderProps)
           )}
         </div>
       </div>
-      {showUploadModal && onUpload && (
+      {showUploadModal && (
         <UploadVideoModal
           onUpload={(video) => {
-            onUpload(video)
+            if (onUpload) {
+              onUpload(video)
+            } else {
+              navigate('/', { state: { newVideo: video } })
+            }
             setShowUploadModal(false)
           }}
           onClose={() => setShowUploadModal(false)}
         />
       )}
+
+      <style>{`
+        @keyframes dropdownFadeIn {
+          from { opacity: 0; transform: translateY(-6px) scale(0.97); }
+          to   { opacity: 1; transform: translateY(0) scale(1); }
+        }
+      `}</style>
     </header>
   )
 }
@@ -308,6 +388,65 @@ function InstallIcon() {
       <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
       <polyline points="7 10 12 15 17 10" />
       <line x1="12" y1="15" x2="12" y2="3" />
+    </svg>
+  )
+}
+
+function UserIcon() {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={2}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className="w-4 h-4 shrink-0"
+    >
+      <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+      <circle cx="12" cy="7" r="4" />
+    </svg>
+  )
+}
+
+function PlaylistIcon() {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={2}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className="w-4 h-4 shrink-0"
+    >
+      <line x1="8" y1="6" x2="21" y2="6" />
+      <line x1="8" y1="12" x2="21" y2="12" />
+      <line x1="8" y1="18" x2="21" y2="18" />
+      <line x1="3" y1="6" x2="3.01" y2="6" />
+      <line x1="3" y1="12" x2="3.01" y2="12" />
+      <line x1="3" y1="18" x2="3.01" y2="18" />
+    </svg>
+  )
+}
+
+function LogoutIcon() {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={2}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className="w-4 h-4 shrink-0"
+    >
+      <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+      <polyline points="16 17 21 12 16 7" />
+      <line x1="21" y1="12" x2="9" y2="12" />
     </svg>
   )
 }
