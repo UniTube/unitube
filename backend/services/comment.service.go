@@ -5,17 +5,17 @@ import (
 	"backend/models"
 	"backend/repositories"
 
-	"gorm.io/gorm"
 )
 
 type CommentService struct {
 	commentRepo *repositories.CommentRepo
 	videoRepo   *repositories.VideoRepo
 	userRepo    *repositories.UserRepo
+	likeRepo    *repositories.LikeRepo
 }
 
-func NewCommentService(commentRepo *repositories.CommentRepo, videoRepo *repositories.VideoRepo, userRepo *repositories.UserRepo) *CommentService {
-	return &CommentService{commentRepo: commentRepo, videoRepo: videoRepo, userRepo: userRepo}
+func NewCommentService(commentRepo *repositories.CommentRepo, videoRepo *repositories.VideoRepo, userRepo *repositories.UserRepo, likeRepo *repositories.LikeRepo) *CommentService {
+	return &CommentService{commentRepo: commentRepo, videoRepo: videoRepo, userRepo: userRepo, likeRepo: likeRepo}
 }
 
 func (s *CommentService) AddComment(dto *dtos.CommentDTO) error {
@@ -60,9 +60,22 @@ func (s *CommentService) GetCommentsByVideoID(videoID uint) ([]dtos.CommentDTO, 
 	return commentDTOs, nil
 }
 
-// LikeVideo increments the like counter atomically
-func (s *CommentService) LikeVideo(videoID uint) error {
-	return s.videoRepo.Db.Model(&models.Video{}).
-		Where("id = ?", videoID).
-		UpdateColumn("likes", gorm.Expr("likes + 1")).Error
+// LikeVideo records a like from the user and increments the counter (idempotent).
+func (s *CommentService) LikeVideo(userID, videoID uint) error {
+	liked, err := s.likeRepo.HasUserLiked(userID, videoID)
+	if err != nil {
+		return err
+	}
+	if liked {
+		return nil
+	}
+	return s.likeRepo.CreateLike(userID, videoID)
+}
+
+func (s *CommentService) HasUserLiked(userID, videoID uint) (bool, error) {
+	return s.likeRepo.HasUserLiked(userID, videoID)
+}
+
+func (s *CommentService) GetUserByEmail(email string) (*models.User, error) {
+	return s.userRepo.GetUserByEmail(email)
 }

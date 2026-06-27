@@ -30,6 +30,7 @@ export default function VideoPage() {
         setError(null)
         const data = await videoService.getVideoById(Number(id))
         setVideo(data)
+        setLiked(data.likedByMe ?? false)
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to load video')
       } finally {

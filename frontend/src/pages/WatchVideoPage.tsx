@@ -39,6 +39,7 @@ export default function WatchVideoPage() {
   const [newComment, setNewComment] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [liked, setLiked] = useState(false)
+  const [likeError, setLikeError] = useState<string | null>(null)
 
   // More (⋮) menu
   const [showMoreMenu, setShowMoreMenu] = useState(false)
@@ -61,6 +62,7 @@ export default function WatchVideoPage() {
         setError(null)
         const videoData = await videoService.getVideoById(Number(id))
         setVideo(videoData)
+        setLiked(videoData.likedByMe ?? false)
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to load video')
         setVideo(null)
@@ -95,10 +97,17 @@ export default function WatchVideoPage() {
 
   const handleLike = async () => {
     if (liked || !video) return
+    if (!isAuthenticated) {
+      setLikeError('Please log in to like videos.')
+      return
+    }
+    setLikeError(null)
     try {
       await videoService.likeVideo(video.id)
       setLiked(true)
-    } catch {}
+    } catch (err) {
+      setLikeError(err instanceof Error ? err.message : 'Failed to like video.')
+    }
   }
 
   const handleAddComment = async () => {
@@ -195,6 +204,9 @@ export default function WatchVideoPage() {
                 <ThumbUpIcon filled={liked} />
                 {liked ? 'Liked' : 'Like'}
               </button>
+              {likeError && (
+                <p className="text-xs text-red-600 dark:text-red-400">{likeError}</p>
+              )}
 
               {/* Author-only actions */}
               {isAuthor && (

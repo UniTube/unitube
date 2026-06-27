@@ -84,6 +84,17 @@ describe('WatchVideoPage', () => {
     })
   })
 
+  test('shows liked state when video was previously liked', async () => {
+    (videoService.getVideoById as jest.Mock).mockResolvedValue({ ...mockVideo, likedByMe: true })
+    render(<WatchVideoPage />)
+
+    await waitFor(() => {
+      const likeButton = screen.getByRole('button', { name: /like this video/i })
+      expect(likeButton).toHaveTextContent('Liked')
+      expect(likeButton).toBeDisabled()
+    })
+  })
+
   test('adds a new comment successfully', async () => {
     const mockNewComment = { id: 3, content: 'Awesome!', authorUsername: 'user3' };
     (authService.getUser as jest.Mock).mockReturnValue({ id: 1, surname: 'User3' });

@@ -6,6 +6,8 @@ import (
 	"fmt"
 	"net/http"
 
+	"backend/middlewares"
+
 	"github.com/gin-gonic/gin"
 )
 
@@ -78,7 +80,19 @@ func (c *CommentController) LikeVideo(ctx *gin.Context) {
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": "Invalid video ID"})
 		return
 	}
-	if err := c.service.LikeVideo(videoID); err != nil {
+
+	email, err := middlewares.GetAuthenticatedEmail(ctx)
+	if err != nil {
+		ctx.JSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
+		return
+	}
+	user, err := c.service.GetUserByEmail(email)
+	if err != nil {
+		ctx.JSON(http.StatusUnauthorized, gin.H{"error": "User not found"})
+		return
+	}
+
+	if err := c.service.LikeVideo(user.ID, videoID); err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}

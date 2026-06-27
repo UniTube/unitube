@@ -105,6 +105,8 @@ func (v *VideoService) toVideoResponse(video *models.Video) *dtos.VideoResponseD
 		UploadedAt:  uploadedAt,
 		URL:         buildStreamURL(video.ID),
 		Tags:        tagNames,
+		Likes:       video.Likes,
+		LikedByMe:   false,
 	}
 }
 

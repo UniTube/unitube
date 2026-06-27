@@ -26,10 +26,11 @@ func main() {
 	userService := services.NewUserService(userRepo, videoService)
 	playlistService := services.NewPlaylistService(playlistRepo, userRepo, videoRepo)
 	userController := controllers.NewUserController(userService)
-	videoController := controllers.NewVideoController(videoService, userService)
-	playlistController := controllers.NewPlaylistController(playlistService)
-	commentService := services.NewCommentService(repositories.NewCommentRepo(db), videoRepo, userRepo)
+	likeRepo := repositories.NewLikeRepo(db)
+	commentService := services.NewCommentService(repositories.NewCommentRepo(db), videoRepo, userRepo, likeRepo)
 	commentController := controllers.NewCommentController(commentService)
+	videoController := controllers.NewVideoController(videoService, userService, commentService)
+	playlistController := controllers.NewPlaylistController(playlistService)
 	router := gin.Default()
 	router.Use(cors.New(cors.Config{
 		AllowOrigins:     []string{"http://localhost:5173", "http://127.0.0.1:5173", "http://localhost:3000", "http://127.0.0.1:3000"},
