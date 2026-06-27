@@ -34,7 +34,55 @@ func (s *PlaylistService) CreatePlaylist(playlistDTO dtos.PlaylistDTO) (result *
 		ID:     createdPlaylist.ID,
 		Name:   createdPlaylist.Name,
 		UserID: createdPlaylist.UserID,
+		Count:  0,
 	}, nil
+}
+
+func (s *PlaylistService) toPlaylistDTO(playlist *models.Playlist, includeVideos bool) dtos.PlaylistDTO {
+	playlistDTO := dtos.PlaylistDTO{
+		ID:     playlist.ID,
+		Name:   playlist.Name,
+		UserID: playlist.UserID,
+		Count:  len(playlist.Videos),
+	}
+
+	if includeVideos {
+		playlistDTO.Videos = make([]dtos.VideoResponseDTO, len(playlist.Videos))
+		for i, video := range playlist.Videos {
+			playlistDTO.Videos[i] = s.toVideoResponseDTO(&video)
+		}
+	}
+
+	return playlistDTO
+}
+
+func (s *PlaylistService) toVideoResponseDTO(video *models.Video) dtos.VideoResponseDTO {
+	authorName := "Unknown"
+	if video.Author.ID != 0 {
+		authorName = fmt.Sprintf("%s %s", video.Author.Name, video.Author.Surname)
+	}
+
+	uploadedAt := video.UploadAt
+	if uploadedAt == "" {
+		uploadedAt = video.CreatedAt.Format("02/01/2006 15:04")
+	}
+
+	tagNames := make([]string, len(video.Tags))
+	for i, tag := range video.Tags {
+		tagNames[i] = tag.Name
+	}
+
+	return dtos.VideoResponseDTO{
+		ID:          video.ID,
+		Title:       video.Title,
+		Description: video.Description,
+		Author:      authorName,
+		AuthorID:    video.AuthorID,
+		Size:        fmt.Sprintf("%d", video.Size),
+		UploadedAt:  uploadedAt,
+		URL:         fmt.Sprintf("/api/v1/videos/%d", video.ID),
+		Tags:        tagNames,
+	}
 }
 
 func (s *PlaylistService) GetAllPlaylists() ([]dtos.PlaylistDTO, error) {
@@ -42,56 +90,50 @@ func (s *PlaylistService) GetAllPlaylists() ([]dtos.PlaylistDTO, error) {
 	if err != nil {
 		return nil, err
 	}
-	// Convert models to DTOs
 	playlistDTOs := make([]dtos.PlaylistDTO, len(data))
 	for i, playlist := range data {
-		playlistDTOs[i] = dtos.PlaylistDTO{
-			ID:     playlist.ID,
-			Name:   playlist.Name,
-			UserID: playlist.UserID,
-		}
+		playlistDTOs[i] = s.toPlaylistDTO(&playlist, false)
 	}
 	return playlistDTOs, nil
 }
 
-func (s *PlaylistService) AddVideoToPlaylist(playlistID uint, videoID uint, userID uint) error {
-	// verify that the playlist belongs to the user
+func (s *PlaylistService) GetPlaylistByID(playlistID uint) (*dtos.PlaylistDTO, error) {
 	playlist, err := s.playlistRepo.GetPlaylistByID(playlistID)
 	if err != nil {
-		return err
+		return nil, err
 	}
-	if playlist.UserID != userID {
-		return fmt.Errorf("playlist does not belong to user")
-	}
+	playlistDTO := s.toPlaylistDTO(playlist, true)
+	return &playlistDTO, nil
+}
 
-	// verify that the user exists
-	user, err := s.userRepo.GetUserByID(userID)
+func (s *PlaylistService) AddVideoToPlaylist(playlistID uint, videoID uint) (*dtos.PlaylistDTO, error) {
+	_, err := s.playlistRepo.GetPlaylistByID(playlistID)
 	if err != nil {
-		return err
-	}
-	if user == nil {
-		return fmt.Errorf("user not found")
+		return nil, err
 	}
 
 	// verify that the video exists
 	video, err := s.videoRepo.GetVideoByID(videoID)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	if video == nil {
-		return fmt.Errorf("video not found")
+		return nil, fmt.Errorf("video not found")
 	}
 
-	// verify that the playlist belongs to the user
-	playlist, err = s.playlistRepo.GetPlaylistByID(playlistID)
+	err = s.playlistRepo.AddVideoToPlaylist(playlistID, videoID)
 	if err != nil {
-		return err
-	}
-	if playlist.UserID != userID {
-		return fmt.Errorf("playlist does not belong to user")
+		return nil, err
 	}
 
-	return s.playlistRepo.AddVideoToPlaylist(playlistID, videoID)
+	return s.GetPlaylistByID(playlistID)
+}
+
+func (s *PlaylistService) RemoveVideoFromPlaylist(playlistID uint, videoID uint) (*dtos.PlaylistDTO, error) {
+	if err := s.playlistRepo.RemoveVideoFromPlaylist(playlistID, videoID); err != nil {
+		return nil, err
+	}
+	return s.GetPlaylistByID(playlistID)
 }
 
 // deletePlaylist deletes a playlist by its ID.

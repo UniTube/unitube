@@ -13,7 +13,7 @@ export default defineConfig({
       registerType: 'autoUpdate',
 
       // Pre-cache all static assets produced by the build
-      includeAssets: ['favicon.svg', 'images/*.png'],
+      includeAssets: ['images/favicon.ico', 'images/*.png'],
 
       manifest: {
         name: 'UniTube',

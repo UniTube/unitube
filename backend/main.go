@@ -21,10 +21,13 @@ func main() {
 	db := config.ConnectDB()
 	userRepo := repositories.NewUserRepo(db)
 	videoRepo := repositories.NewVideoRepo(db)
+	playlistRepo := repositories.NewPlaylistRepo(db)
 	videoService := services.NewVideoService(videoRepo)
 	userService := services.NewUserService(userRepo, videoService)
+	playlistService := services.NewPlaylistService(playlistRepo, userRepo, videoRepo)
 	userController := controllers.NewUserController(userService)
 	videoController := controllers.NewVideoController(videoService, userService)
+	playlistController := controllers.NewPlaylistController(playlistService)
 	commentService := services.NewCommentService(repositories.NewCommentRepo(db), videoRepo, userRepo)
 	commentController := controllers.NewCommentController(commentService)
 	router := gin.Default()
@@ -56,6 +59,7 @@ func main() {
 		routes.SetupUserRoutes(v1, userController)
 		routes.SetupVideoRoutes(v1, videoController)
 		routes.SetupCommentRoutes(v1, commentController)
+		routes.SetupPlaylistRoutes(v1, playlistController)
 		v1.GET("/tags", func(c *gin.Context) {
 			var tags []models.Tag
 			if err := db.Find(&tags).Error; err != nil {

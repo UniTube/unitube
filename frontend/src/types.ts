@@ -92,5 +92,5 @@ export interface Playlist {
 
 export interface CreatePlaylistRequest {
   name: string
-  description?: string
+  userId: string
 }

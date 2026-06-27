@@ -59,7 +59,10 @@ export default function AddToPlaylistModal({ videoId, onClose }: AddToPlaylistMo
   async function handleAdd(playlistId: number) {
     setAddingId(playlistId)
     try {
-      await playlistService.addVideoToPlaylist(playlistId, videoId)
+      const updated = await playlistService.addVideoToPlaylist(playlistId, videoId)
+      setPlaylists((prev) =>
+        prev.map((playlist) => (playlist.id === updated.id ? updated : playlist)),
+      )
       setAddedIds((prev) => new Set([...prev, playlistId]))
       showToast('success', 'Added to playlist!')
     } catch (err) {
@@ -75,10 +78,10 @@ export default function AddToPlaylistModal({ videoId, onClose }: AddToPlaylistMo
     setCreating(true)
     setCreateError(null)
     try {
-      const created = await playlistService.createPlaylist({ name: newName.trim() })
+      const created = await playlistService.createPlaylist(newName.trim())
       // Immediately add the current video to the new playlist
-      await playlistService.addVideoToPlaylist(created.id, videoId)
-      setPlaylists((prev) => [{ ...created, videoCount: 1 }, ...prev])
+      const updated = await playlistService.addVideoToPlaylist(created.id, videoId)
+      setPlaylists((prev) => [updated, ...prev])
       setAddedIds((prev) => new Set([...prev, created.id]))
       setNewName('')
       setShowCreateForm(false)

@@ -28,7 +28,7 @@ func ConnectDB() *gorm.DB {
 	if err != nil {
 		log.Fatal("Failed to connect to database:", err)
 	}
-	db.AutoMigrate(&models.User{}, &models.Video{}, &models.Comment{}, &models.Tag{})
+	db.AutoMigrate(&models.User{}, &models.Video{}, &models.Comment{}, &models.Tag{}, &models.Playlist{})
 
 	// Seed tags
 	var count int64

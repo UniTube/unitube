@@ -39,10 +39,7 @@ export default function PlaylistsPage() {
     setCreating(true)
     setCreateError(null)
     try {
-      const created = await playlistService.createPlaylist({
-        name: newName.trim(),
-        description: newDesc.trim() || undefined,
-      })
+      const created = await playlistService.createPlaylist(newName.trim())
       setPlaylists((prev) => [created, ...prev])
       setNewName('')
       setNewDesc('')
@@ -81,7 +78,8 @@ export default function PlaylistsPage() {
               My Playlists
             </h1>
             <p className="text-sm text-zinc-500 dark:text-zinc-400 mt-1">
-              Organise your favourite videos into collections
+              Organisieren Sie Ihre Videos in benutzerdefinierten Wiedergabelisten, um sie leicht zu
+              finden und zu teilen.
             </p>
           </div>
           <button
@@ -102,7 +100,7 @@ export default function PlaylistsPage() {
           >
             <h2 className="text-base font-semibold mb-4 flex items-center gap-2">
               <PlaylistPlusIcon />
-              Create a new playlist
+              Eine neue Wiedergabeliste erstellen
             </h2>
             <form onSubmit={handleCreate} className="space-y-3">
               <div>
@@ -178,7 +176,7 @@ export default function PlaylistsPage() {
         {/* Error */}
         {error && !loading && (
           <div className="bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-900 text-red-700 dark:text-red-400 px-5 py-4 rounded-xl">
-            <p className="font-medium">Could not load playlists</p>
+            <p className="font-medium"> Die Playlists konnten nicht geladen werden </p>
             <p className="text-sm mt-0.5">{error}</p>
           </div>
         )}
@@ -191,13 +189,13 @@ export default function PlaylistsPage() {
             </div>
             <h2 className="text-xl font-semibold mb-2">No playlists yet</h2>
             <p className="text-zinc-500 dark:text-zinc-400 text-sm mb-6">
-              Create your first playlist to start organising your videos
+              Erstellen Sie Ihre erste Wiedergabeliste, um Ihre Videos zu organisieren
             </p>
             <button
               onClick={() => setShowForm(true)}
               className="bg-red-600 hover:bg-red-700 text-white text-sm font-medium px-6 py-2.5 rounded-xl transition-colors"
             >
-              Create a playlist
+              Eine Wiedergabeliste erstellen
             </button>
           </div>
         )}
@@ -255,11 +253,6 @@ function PlaylistCard({ playlist, deleting, onDelete }: PlaylistCardProps) {
         <h3 className="font-semibold text-sm text-zinc-900 dark:text-zinc-100 line-clamp-1 group-hover:text-red-600 dark:group-hover:text-red-400 transition-colors">
           {playlist.name}
         </h3>
-        {playlist.description && (
-          <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-1 line-clamp-2">
-            {playlist.description}
-          </p>
-        )}
       </div>
 
       {/* Delete button */}

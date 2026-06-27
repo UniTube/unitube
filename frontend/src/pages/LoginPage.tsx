@@ -47,8 +47,11 @@ export default function LoginPage() {
         <div className="bg-white dark:bg-zinc-900 rounded-lg shadow-lg p-8">
           <form onSubmit={handleSubmit} className="space-y-6">
             <div>
-              <label htmlFor="email" className="block text-sm font-medium text-gray-700 dark:text-zinc-300 mb-2">
-                Email
+              <label
+                htmlFor="email"
+                className="block text-sm font-medium text-gray-700 dark:text-zinc-300 mb-2"
+              >
+                E-Mail-Adresse
               </label>
               <input
                 id="email"
@@ -62,8 +65,11 @@ export default function LoginPage() {
             </div>
 
             <div>
-              <label htmlFor="password" className="block text-sm font-medium text-gray-700 dark:text-zinc-300 mb-2">
-                Mot de passe
+              <label
+                htmlFor="password"
+                className="block text-sm font-medium text-gray-700 dark:text-zinc-300 mb-2"
+              >
+                Passwort
               </label>
               <input
                 id="password"
@@ -103,13 +109,18 @@ export default function LoginPage() {
               <div className="w-full border-t border-gray-200 dark:border-zinc-700" />
             </div>
             <div className="relative flex justify-center text-sm">
-              <span className="px-2 bg-white dark:bg-zinc-900 text-gray-500 dark:text-zinc-500">Ou</span>
+              <span className="px-2 bg-white dark:bg-zinc-900 text-gray-500 dark:text-zinc-500">
+                Ou
+              </span>
             </div>
           </div>
 
           <p className="mt-6 text-center text-gray-600 dark:text-zinc-400">
-            Pas encore de compte?{' '}
-            <a href="/register" className="text-red-600 font-semibold hover:text-red-700 transition">
+            Noch kein Konto?{' '}
+            <a
+              href="/register"
+              className="text-red-600 font-semibold hover:text-red-700 transition"
+            >
               S&apos;ich registrieren
             </a>
           </p>

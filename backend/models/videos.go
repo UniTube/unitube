@@ -15,4 +15,5 @@ type Video struct {
 	Likes       int `gorm:"default:0"`
 	Comments    []Comment `gorm:"foreignKey:VideoID"`
 	Tags        []Tag `gorm:"many2many:video_tags;"`
+	Playlists   []Playlist `gorm:"many2many:video_playlists;"`
 }

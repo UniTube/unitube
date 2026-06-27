@@ -79,7 +79,7 @@ class AuthService {
   async authenticatedFetch(url: string, options: RequestInit = {}): Promise<Response> {
     const headers = new Headers(options.headers)
     if (!headers.has('Accept')) headers.set('Accept', 'application/json')
-
+    console.log(options)
     const token = this.getToken()
     if (token) headers.set('Authorization', `Bearer ${token}`)
 

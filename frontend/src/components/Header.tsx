@@ -136,7 +136,7 @@ export default function Header({ onUpload, onGoLiveClick, isLive }: HeaderProps)
                 className="flex items-center gap-2 bg-red-600 hover:bg-red-700 active:bg-red-800 text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors"
               >
                 <UploadIcon />
-                Upload video
+                Video hochladen
               </button>
 
               {isLive ? (
@@ -145,15 +145,17 @@ export default function Header({ onUpload, onGoLiveClick, isLive }: HeaderProps)
                   className="flex items-center gap-2 bg-red-600 text-white text-sm font-medium px-4 py-2 rounded-lg"
                 >
                   <span className="inline-block w-2 h-2 rounded-full bg-white animate-pulse" />
-                  You are live
+                  Sie sind live
                 </Link>
               ) : (
                 <button
-                  onClick={onGoLiveClick || (() => navigate('/', { state: { triggerGoLive: true } }))}
+                  onClick={
+                    onGoLiveClick || (() => navigate('/', { state: { triggerGoLive: true } }))
+                  }
                   className="flex items-center gap-2 bg-white dark:bg-zinc-800 hover:bg-red-50 dark:hover:bg-zinc-700 text-red-600 dark:text-red-400 border border-red-200 dark:border-zinc-700 text-sm font-medium px-4 py-2 rounded-lg transition-colors"
                 >
                   <span className="inline-block w-2 h-2 rounded-full bg-red-500" />
-                  Go live
+                  Go Live
                 </button>
               )}
 
@@ -194,7 +196,7 @@ export default function Header({ onUpload, onGoLiveClick, isLive }: HeaderProps)
                           className="flex items-center gap-3 px-4 py-2.5 text-sm text-zinc-700 dark:text-zinc-300 hover:bg-red-50 dark:hover:bg-zinc-800 hover:text-red-600 dark:hover:text-red-400 transition-colors"
                         >
                           <UserIcon />
-                          My Profile
+                          Mein Profil
                         </Link>
                         <Link
                           to="/playlists"
@@ -202,7 +204,7 @@ export default function Header({ onUpload, onGoLiveClick, isLive }: HeaderProps)
                           className="flex items-center gap-3 px-4 py-2.5 text-sm text-zinc-700 dark:text-zinc-300 hover:bg-red-50 dark:hover:bg-zinc-800 hover:text-red-600 dark:hover:text-red-400 transition-colors"
                         >
                           <PlaylistIcon />
-                          My Playlists
+                          Meine Playlists
                         </Link>
                       </div>
 
@@ -212,7 +214,7 @@ export default function Header({ onUpload, onGoLiveClick, isLive }: HeaderProps)
                           className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-zinc-700 dark:text-zinc-300 hover:bg-red-50 dark:hover:bg-zinc-800 hover:text-red-600 dark:hover:text-red-400 transition-colors"
                         >
                           <LogoutIcon />
-                          Logout
+                          Abmelden
                         </button>
                       </div>
                     </div>
@@ -227,7 +229,7 @@ export default function Header({ onUpload, onGoLiveClick, isLive }: HeaderProps)
               to="/login"
               className="text-red-600 hover:text-red-700 text-sm font-medium px-3 py-2 rounded-lg transition-colors"
             >
-              Sign In
+              Anmelden
             </Link>
           )}
         </div>

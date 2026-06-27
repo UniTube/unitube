@@ -1,4 +1,4 @@
-import { Playlist, CreatePlaylistRequest, Video } from '../types'
+import { Playlist, Video } from '../types'
 import authService from './authService'
 import { mapVideo } from './videoService'
 
@@ -10,16 +10,16 @@ function mapPlaylist(data: any): Playlist {
     id: data.id,
     name: data.name,
     description: data.description ?? '',
-    videoCount: data.videoCount ?? (data.videos ? data.videos.length : 0),
+    videoCount: data.count ?? data.videoCount ?? (data.videos ? data.videos.length : 0),
     createdAt: data.createdAt ?? '',
     videos: (data.videos ?? []).map(mapVideo) as Video[],
   }
 }
 
 class PlaylistService {
-  /** GET /playlists/me — fetch all playlists owned by the authenticated user */
+  /** GET /playlists - fetch playlists */
   async getMyPlaylists(): Promise<Playlist[]> {
-    const response = await authService.authenticatedFetch(`${API_BASE_URL}/playlists/me`)
+    const response = await authService.authenticatedFetch(`${API_BASE_URL}/playlists`)
     if (!response.ok) {
       const error = await response.json().catch(() => ({ error: 'Failed to load playlists' }))
       throw new Error(error.error || `Failed to load playlists (${response.status})`)
@@ -28,11 +28,9 @@ class PlaylistService {
     return Array.isArray(data) ? data.map(mapPlaylist) : []
   }
 
-  /** GET /playlists/:id — fetch a single playlist with its videos */
+  /** GET /playlists/:id - fetch a single playlist with its videos */
   async getPlaylist(playlistId: number): Promise<Playlist> {
-    const response = await authService.authenticatedFetch(
-      `${API_BASE_URL}/playlists/${playlistId}`,
-    )
+    const response = await authService.authenticatedFetch(`${API_BASE_URL}/playlists/${playlistId}`)
     if (!response.ok) {
       const error = await response.json().catch(() => ({ error: 'Failed to load playlist' }))
       throw new Error(error.error || `Failed to load playlist (${response.status})`)
@@ -40,15 +38,15 @@ class PlaylistService {
     return mapPlaylist(await response.json())
   }
 
-  /** POST /playlists — create a new playlist */
-  async createPlaylist(data: CreatePlaylistRequest): Promise<Playlist> {
+  /** POST /playlists - create a new playlist */
+  async createPlaylist(name: string): Promise<Playlist> {
     const user = authService.getUser()
     if (!user?.id) throw new Error('You must be logged in to create a playlist')
 
     const response = await authService.authenticatedFetch(`${API_BASE_URL}/playlists`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ ...data, ownerId: user.id }),
+      body: JSON.stringify({ name: name, user_id: user.id }),
     })
     if (!response.ok) {
       const error = await response.json().catch(() => ({ error: 'Failed to create playlist' }))
@@ -57,24 +55,25 @@ class PlaylistService {
     return mapPlaylist(await response.json())
   }
 
-  /** POST /playlists/:id/videos — add a video to a playlist */
-  async addVideoToPlaylist(playlistId: number, videoId: number): Promise<void> {
+  /** POST /playlists/:id/videos - add a video to a playlist */
+  async addVideoToPlaylist(playlistId: number, videoId: number): Promise<Playlist> {
     const response = await authService.authenticatedFetch(
       `${API_BASE_URL}/playlists/${playlistId}/videos`,
       {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ videoId }),
+        body: JSON.stringify({ video_id: videoId }),
       },
     )
     if (!response.ok) {
       const error = await response.json().catch(() => ({ error: 'Failed to add video' }))
       throw new Error(error.error || `Failed to add video to playlist (${response.status})`)
     }
+    return mapPlaylist(await response.json())
   }
 
-  /** DELETE /playlists/:id/videos/:videoId — remove a video from a playlist */
-  async removeVideoFromPlaylist(playlistId: number, videoId: number): Promise<void> {
+  /** DELETE /playlists/:id/videos/:videoId - remove a video from a playlist */
+  async removeVideoFromPlaylist(playlistId: number, videoId: number): Promise<Playlist> {
     const response = await authService.authenticatedFetch(
       `${API_BASE_URL}/playlists/${playlistId}/videos/${videoId}`,
       { method: 'DELETE' },
@@ -83,9 +82,10 @@ class PlaylistService {
       const error = await response.json().catch(() => ({ error: 'Failed to remove video' }))
       throw new Error(error.error || `Failed to remove video from playlist (${response.status})`)
     }
+    return mapPlaylist(await response.json())
   }
 
-  /** DELETE /playlists/:id — delete an entire playlist */
+  /** DELETE /playlists/:id - delete an entire playlist */
   async deletePlaylist(playlistId: number): Promise<void> {
     const response = await authService.authenticatedFetch(
       `${API_BASE_URL}/playlists/${playlistId}`,

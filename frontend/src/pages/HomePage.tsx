@@ -187,7 +187,7 @@ export default function HomePage({ isLive, onUpload, onDelete, onGoLive }: HomeP
 
     if (selectedTag !== 'All') {
       if (video.tags && video.tags.length > 0) {
-        const matchesTag = video.tags.some(t => t.toLowerCase() === selectedTag.toLowerCase())
+        const matchesTag = video.tags.some((t) => t.toLowerCase() === selectedTag.toLowerCase())
         if (!matchesTag) {
           return false
         }
@@ -241,7 +241,7 @@ export default function HomePage({ isLive, onUpload, onDelete, onGoLive }: HomeP
           {/* Error State */}
           {error && (
             <div className="bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-900 text-red-700 dark:text-red-400 px-4 py-3 rounded-lg mb-6">
-              <p className="font-medium">Error loading videos</p>
+              <p className="font-medium">Fehler beim Laden der Videos</p>
               <p className="text-sm">{error}</p>
             </div>
           )}
@@ -265,15 +265,17 @@ export default function HomePage({ isLive, onUpload, onDelete, onGoLive }: HomeP
                     />
                   </svg>
                 </div>
-                <p className="text-gray-600 dark:text-zinc-400 font-medium mb-2">No videos yet</p>
+                <p className="text-gray-600 dark:text-zinc-400 font-medium mb-2">
+                  Noch keine Videos vorhanden
+                </p>
                 <p className="text-gray-400 dark:text-zinc-500 text-sm mb-6">
-                  Upload your first video to get started
+                  Laden Sie Ihr erstes Video hoch, um es mit der Universität zu teilen!
                 </p>
                 <button
                   onClick={() => setShowUploadModal(true)}
                   className="bg-red-600 hover:bg-red-700 text-white font-medium px-6 py-2 rounded-lg transition-colors"
                 >
-                  Upload Video
+                  Video hochladen
                 </button>
               </div>
             </div>
@@ -299,10 +301,10 @@ export default function HomePage({ isLive, onUpload, onDelete, onGoLive }: HomeP
                   </svg>
                 </div>
                 <p className="text-gray-600 dark:text-zinc-400 font-medium mb-2">
-                  No videos match your search or filter
+                  Keine Videos entsprechen Ihrer Suche oder Filterung
                 </p>
                 <p className="text-gray-400 dark:text-zinc-500 text-sm mb-6">
-                  Try clearing your search query or choosing another tag.
+                  Versuchen Sie, Ihre Suchanfrage zu löschen oder einen anderen Tag auszuwählen.
                 </p>
                 <button
                   onClick={() => {
@@ -311,7 +313,7 @@ export default function HomePage({ isLive, onUpload, onDelete, onGoLive }: HomeP
                   }}
                   className="bg-red-600 hover:bg-red-700 text-white font-medium px-6 py-2 rounded-lg transition-colors cursor-pointer"
                 >
-                  Reset filters
+                  Filter zurücksetzen
                 </button>
               </div>
             </div>
