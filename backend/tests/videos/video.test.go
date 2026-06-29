@@ -24,6 +24,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
+	gormlogger "gorm.io/gorm/logger"
 )
 
 var testDB *gorm.DB
@@ -32,12 +33,14 @@ func setupRouter() *gin.Engine {
 	gin.SetMode(gin.TestMode)
 	router := gin.Default()
 	
-	db, err := gorm.Open(sqlite.Open(":memory:"), &gorm.Config{})
+	db, err := gorm.Open(sqlite.Open(":memory:"), &gorm.Config{
+		Logger: gormlogger.Default.LogMode(gormlogger.Silent),
+	})
 	if err != nil {
 		panic(err)
 	}
 	
-	db.AutoMigrate(&models.User{}, &models.Video{}, &models.Comment{}, &models.Tag{})
+	db.AutoMigrate(&models.User{}, &models.Video{}, &models.Comment{}, &models.Tag{}, &models.Playlist{})
 	testDB = db
 	return router
 }
@@ -311,8 +314,9 @@ func TestDeleteVideo(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, "Video deleted successfully", resp["message"])
 
-	// Check it was deleted from DB
-	var check models.Video
-	err = testDB.First(&check, video.ID).Error
-	assert.Error(t, err) // Should not be found
+	// Check it was deleted from DB without triggering noisy "record not found" logs.
+	var count int64
+	err = testDB.Model(&models.Video{}).Where("id = ?", video.ID).Count(&count).Error
+	assert.NoError(t, err)
+	assert.Equal(t, int64(0), count)
 }

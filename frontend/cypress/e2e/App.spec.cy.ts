@@ -1,5 +1,5 @@
-describe('template spec', () => {
-  it('renders the default elements on the header', () => {
+describe('Basis-Template', () => {
+  it('zeigt die Standardelemente im Header an', () => {
     cy.visit('http://localhost:5173')
 
     cy.get('header').should('be.visible')

@@ -23,16 +23,16 @@
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">2.56% </span>
+                <span class="strong">2.43% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>1/39</span>
+                <span class='fraction'>1/41</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
                 <span class="strong">0% </span>
                 <span class="quiet">Branches</span>
-                <span class='fraction'>0/38</span>
+                <span class='fraction'>0/39</span>
             </div>
         
             
@@ -44,9 +44,9 @@
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">3.12% </span>
+                <span class="strong">2.94% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>1/32</span>
+                <span class='fraction'>1/34</span>
             </div>
         
             
@@ -197,8 +197,6 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
@@ -237,6 +235,20 @@
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -253,19 +265,7 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">import { Playlist, CreatePlaylistRequest, Video } from '../types'
+<span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">import { Playlist, Video } from '../types'
 import authService from './authService'
 import { mapVideo } from './videoService'
 &nbsp;
@@ -277,16 +277,16 @@ function <span class="fstat-no" title="function not covered" >mapPlaylist(</span
     id: data.id,
     name: data.name,
     description: data.description ?? '',
-    videoCount: data.videoCount ?? (data.videos ? data.videos.length : 0),
+    videoCount: data.count ?? data.videoCount ?? (data.videos ? data.videos.length : 0),
     createdAt: data.createdAt ?? '',
     videos: (data.videos ?? []).map(mapVideo) as Video[],
   }
 }
 &nbsp;
 class PlaylistService {
-  /** GET /playlists/me — fetch all playlists owned by the authenticated user */
+  /** GET /playlists - fetch playlists */
 <span class="fstat-no" title="function not covered" >  as</span>ync getMyPlaylists(): Promise&lt;Playlist[]&gt; {
-    const response = <span class="cstat-no" title="statement not covered" >await authService.authenticatedFetch(`${API_BASE_URL}/playlists/me`)</span>
+    const response = <span class="cstat-no" title="statement not covered" >await authService.authenticatedFetch(`${API_BASE_URL}/playlists`)</span>
 <span class="cstat-no" title="statement not covered" >    if (!response.ok) {</span>
       const error = <span class="cstat-no" title="statement not covered" >await response.json().catch(<span class="fstat-no" title="function not covered" >()</span> =&gt; (<span class="cstat-no" title="statement not covered" >{ error: 'Failed to load playlists' })</span>)</span>
 <span class="cstat-no" title="statement not covered" >      throw new Error(error.error || `Failed to load playlists (${response.status})`)</span>
@@ -295,11 +295,9 @@ class PlaylistService {
 <span class="cstat-no" title="statement not covered" >    return Array.isArray(data) ? data.map(mapPlaylist) : []</span>
   }
 &nbsp;
-  /** GET /playlists/:id — fetch a single playlist with its videos */
+  /** GET /playlists/:id - fetch a single playlist with its videos */
 <span class="fstat-no" title="function not covered" >  as</span>ync getPlaylist(playlistId: number): Promise&lt;Playlist&gt; {
-    const response = <span class="cstat-no" title="statement not covered" >await authService.authenticatedFetch(</span>
-      `${API_BASE_URL}/playlists/${playlistId}`,
-    )
+    const response = <span class="cstat-no" title="statement not covered" >await authService.authenticatedFetch(`${API_BASE_URL}/playlists/${playlistId}`)</span>
 <span class="cstat-no" title="statement not covered" >    if (!response.ok) {</span>
       const error = <span class="cstat-no" title="statement not covered" >await response.json().catch(<span class="fstat-no" title="function not covered" >()</span> =&gt; (<span class="cstat-no" title="statement not covered" >{ error: 'Failed to load playlist' })</span>)</span>
 <span class="cstat-no" title="statement not covered" >      throw new Error(error.error || `Failed to load playlist (${response.status})`)</span>
@@ -307,15 +305,15 @@ class PlaylistService {
 <span class="cstat-no" title="statement not covered" >    return mapPlaylist(await response.json())</span>
   }
 &nbsp;
-  /** POST /playlists — create a new playlist */
-<span class="fstat-no" title="function not covered" >  as</span>ync createPlaylist(data: CreatePlaylistRequest): Promise&lt;Playlist&gt; {
+  /** POST /playlists - create a new playlist */
+<span class="fstat-no" title="function not covered" >  as</span>ync createPlaylist(name: string): Promise&lt;Playlist&gt; {
     const user = <span class="cstat-no" title="statement not covered" >authService.getUser()</span>
 <span class="cstat-no" title="statement not covered" >    if (!user?.id) <span class="cstat-no" title="statement not covered" >throw new Error('You must be logged in to create a playlist')</span></span>
 &nbsp;
     const response = <span class="cstat-no" title="statement not covered" >await authService.authenticatedFetch(`${API_BASE_URL}/playlists`, {</span>
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ ...data, ownerId: user.id }),
+      body: JSON.stringify({ name: name, user_id: user.id }),
     })
 <span class="cstat-no" title="statement not covered" >    if (!response.ok) {</span>
       const error = <span class="cstat-no" title="statement not covered" >await response.json().catch(<span class="fstat-no" title="function not covered" >()</span> =&gt; (<span class="cstat-no" title="statement not covered" >{ error: 'Failed to create playlist' })</span>)</span>
@@ -324,24 +322,25 @@ class PlaylistService {
 <span class="cstat-no" title="statement not covered" >    return mapPlaylist(await response.json())</span>
   }
 &nbsp;
-  /** POST /playlists/:id/videos — add a video to a playlist */
-<span class="fstat-no" title="function not covered" >  as</span>ync addVideoToPlaylist(playlistId: number, videoId: number): Promise&lt;void&gt; {
+  /** POST /playlists/:id/videos - add a video to a playlist */
+<span class="fstat-no" title="function not covered" >  as</span>ync addVideoToPlaylist(playlistId: number, videoId: number): Promise&lt;Playlist&gt; {
     const response = <span class="cstat-no" title="statement not covered" >await authService.authenticatedFetch(</span>
       `${API_BASE_URL}/playlists/${playlistId}/videos`,
       {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ videoId }),
+        body: JSON.stringify({ video_id: videoId }),
       },
     )
 <span class="cstat-no" title="statement not covered" >    if (!response.ok) {</span>
       const error = <span class="cstat-no" title="statement not covered" >await response.json().catch(<span class="fstat-no" title="function not covered" >()</span> =&gt; (<span class="cstat-no" title="statement not covered" >{ error: 'Failed to add video' })</span>)</span>
 <span class="cstat-no" title="statement not covered" >      throw new Error(error.error || `Failed to add video to playlist (${response.status})`)</span>
     }
+<span class="cstat-no" title="statement not covered" >    return mapPlaylist(await response.json())</span>
   }
 &nbsp;
-  /** DELETE /playlists/:id/videos/:videoId — remove a video from a playlist */
-<span class="fstat-no" title="function not covered" >  as</span>ync removeVideoFromPlaylist(playlistId: number, videoId: number): Promise&lt;void&gt; {
+  /** DELETE /playlists/:id/videos/:videoId - remove a video from a playlist */
+<span class="fstat-no" title="function not covered" >  as</span>ync removeVideoFromPlaylist(playlistId: number, videoId: number): Promise&lt;Playlist&gt; {
     const response = <span class="cstat-no" title="statement not covered" >await authService.authenticatedFetch(</span>
       `${API_BASE_URL}/playlists/${playlistId}/videos/${videoId}`,
       { method: 'DELETE' },
@@ -350,9 +349,10 @@ class PlaylistService {
       const error = <span class="cstat-no" title="statement not covered" >await response.json().catch(<span class="fstat-no" title="function not covered" >()</span> =&gt; (<span class="cstat-no" title="statement not covered" >{ error: 'Failed to remove video' })</span>)</span>
 <span class="cstat-no" title="statement not covered" >      throw new Error(error.error || `Failed to remove video from playlist (${response.status})`)</span>
     }
+<span class="cstat-no" title="statement not covered" >    return mapPlaylist(await response.json())</span>
   }
 &nbsp;
-  /** DELETE /playlists/:id — delete an entire playlist */
+  /** DELETE /playlists/:id - delete an entire playlist */
 <span class="fstat-no" title="function not covered" >  as</span>ync deletePlaylist(playlistId: number): Promise&lt;void&gt; {
     const response = <span class="cstat-no" title="statement not covered" >await authService.authenticatedFetch(</span>
       `${API_BASE_URL}/playlists/${playlistId}`,
@@ -373,7 +373,7 @@ export default new PlaylistService()
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2026-06-27T07:03:26.776Z
+                at 2026-06-28T13:53:53.298Z
             </div>
         <script src="../../prettify.js"></script>
         <script>

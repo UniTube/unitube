@@ -115,7 +115,6 @@ func (userService *UserService) AuthenticateUser(email, password string) (error,
 	if err != nil {
 		return fmt.Errorf("failed to create token"), dtos.LoginResponse{}
 	}
-	fmt.Println(user)
 	return nil, dtos.LoginResponse{Token: token, User: dtos.UserDTO{
 		ID:      user.ID,
 		Name:    user.Name,

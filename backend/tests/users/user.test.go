@@ -20,6 +20,7 @@ import (
 	"golang.org/x/crypto/bcrypt"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
+	gormlogger "gorm.io/gorm/logger"
 )
 
 var testDB *gorm.DB
@@ -28,12 +29,14 @@ func setupRouter() *gin.Engine {
 	gin.SetMode(gin.TestMode)
 	router := gin.Default()
 	
-	db, err := gorm.Open(sqlite.Open(":memory:"), &gorm.Config{})
+	db, err := gorm.Open(sqlite.Open(":memory:"), &gorm.Config{
+		Logger: gormlogger.Default.LogMode(gormlogger.Silent),
+	})
 	if err != nil {
 		panic(err)
 	}
 	
-	db.AutoMigrate(&models.User{}, &models.Video{}, &models.Comment{}, &models.Tag{})
+	db.AutoMigrate(&models.User{}, &models.Video{}, &models.Comment{}, &models.Tag{}, &models.Playlist{})
 	testDB = db
 	return router
 }
@@ -145,6 +148,7 @@ func TestUpdateUser(t *testing.T) {
 		Name:    "UpdatedName",
 		Surname: "UpdatedSurname",
 		Email:   "updatedemail@test.de",
+		Password: "updatedpassword123",
 	}
 	jsonValue, _ := json.Marshal(updatedUserDTO)
 	req, _ := http.NewRequest("PUT", fmt.Sprintf("/users/%d", user.ID), strings.NewReader(string(jsonValue)))
@@ -212,7 +216,7 @@ func TestGetUserByIDNotFound(t *testing.T) {
 	router := setupRouter()
 	router = setupUserRoutes(router)
 
-	user := createTestUserDirectly(t, "notfound@test.de", "password123")
+	createTestUserDirectly(t, "notfound@test.de", "password123")
 	token := getAuthToken(t, router, "notfound@test.de", "password123")
 
 	req, _ := http.NewRequest("GET", "/users/9999", nil)
@@ -271,7 +275,7 @@ func TestDeleteUserNotFound(t *testing.T) {
 	router := setupRouter()
 	router = setupUserRoutes(router)
 
-	user := createTestUserDirectly(t, "deletenotfound@test.de", "password123")
+	 createTestUserDirectly(t, "deletenotfound@test.de", "password123")
 	token := getAuthToken(t, router, "deletenotfound@test.de", "password123")
 
 	req, _ := http.NewRequest("DELETE", "/users/9999", nil)

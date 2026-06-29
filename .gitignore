@@ -1,1 +1,6 @@
 vscode
+
+# Backend application logs (logs/app-YYYY-MM-DD.log)
+backend/logs/
+logs/
+*.log

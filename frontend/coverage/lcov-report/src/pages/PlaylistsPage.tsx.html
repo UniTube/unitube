@@ -32,7 +32,7 @@
             <div class='fl pad1y space-right2'>
                 <span class="strong">0% </span>
                 <span class="quiet">Branches</span>
-                <span class='fraction'>0/41</span>
+                <span class='fraction'>0/37</span>
             </div>
         
             
@@ -436,14 +436,7 @@
 <a name='L371'></a><a href='#L371'>371</a>
 <a name='L372'></a><a href='#L372'>372</a>
 <a name='L373'></a><a href='#L373'>373</a>
-<a name='L374'></a><a href='#L374'>374</a>
-<a name='L375'></a><a href='#L375'>375</a>
-<a name='L376'></a><a href='#L376'>376</a>
-<a name='L377'></a><a href='#L377'>377</a>
-<a name='L378'></a><a href='#L378'>378</a>
-<a name='L379'></a><a href='#L379'>379</a>
-<a name='L380'></a><a href='#L380'>380</a>
-<a name='L381'></a><a href='#L381'>381</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+<a name='L374'></a><a href='#L374'>374</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -485,9 +478,6 @@
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
@@ -515,6 +505,7 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -682,11 +673,6 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -864,10 +850,7 @@ export default function <span class="fstat-no" title="function not covered" >Pla
 <span class="cstat-no" title="statement not covered" >    setCreating(true)</span>
 <span class="cstat-no" title="statement not covered" >    setCreateError(null)</span>
 <span class="cstat-no" title="statement not covered" >    try {</span>
-      const created = <span class="cstat-no" title="statement not covered" >await playlistService.createPlaylist({</span>
-        name: newName.trim(),
-        description: newDesc.trim() || undefined,
-      })
+      const created = <span class="cstat-no" title="statement not covered" >await playlistService.createPlaylist(newName.trim())</span>
 <span class="cstat-no" title="statement not covered" >      setPlaylists(<span class="fstat-no" title="function not covered" >(p</span>rev) =&gt; <span class="cstat-no" title="statement not covered" >[created, ...prev])</span></span>
 <span class="cstat-no" title="statement not covered" >      setNewName('')</span>
 <span class="cstat-no" title="statement not covered" >      setNewDesc('')</span>
@@ -906,7 +889,8 @@ export default function <span class="fstat-no" title="function not covered" >Pla
               My Playlists
             &lt;/h1&gt;
             &lt;p className="text-sm text-zinc-500 dark:text-zinc-400 mt-1"&gt;
-              Organise your favourite videos into collections
+              Organisieren Sie Ihre Videos in benutzerdefinierten Wiedergabelisten, um sie leicht zu
+              finden und zu teilen.
             &lt;/p&gt;
           &lt;/div&gt;
           &lt;button
@@ -927,7 +911,7 @@ export default function <span class="fstat-no" title="function not covered" >Pla
           &gt;
             &lt;h2 className="text-base font-semibold mb-4 flex items-center gap-2"&gt;
               &lt;PlaylistPlusIcon /&gt;
-              Create a new playlist
+              Eine neue Wiedergabeliste erstellen
             &lt;/h2&gt;
             &lt;form onSubmit={handleCreate} className="space-y-3"&gt;
               &lt;div&gt;
@@ -1003,7 +987,7 @@ export default function <span class="fstat-no" title="function not covered" >Pla
         {/* Error */}
         {error &amp;&amp; !loading &amp;&amp; (
           &lt;div className="bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-900 text-red-700 dark:text-red-400 px-5 py-4 rounded-xl"&gt;
-            &lt;p className="font-medium"&gt;Could not load playlists&lt;/p&gt;
+            &lt;p className="font-medium"&gt; Die Playlists konnten nicht geladen werden &lt;/p&gt;
             &lt;p className="text-sm mt-0.5"&gt;{error}&lt;/p&gt;
           &lt;/div&gt;
         )}
@@ -1016,13 +1000,13 @@ export default function <span class="fstat-no" title="function not covered" >Pla
             &lt;/div&gt;
             &lt;h2 className="text-xl font-semibold mb-2"&gt;No playlists yet&lt;/h2&gt;
             &lt;p className="text-zinc-500 dark:text-zinc-400 text-sm mb-6"&gt;
-              Create your first playlist to start organising your videos
+              Erstellen Sie Ihre erste Wiedergabeliste, um Ihre Videos zu organisieren
             &lt;/p&gt;
             &lt;button
               onClick={<span class="fstat-no" title="function not covered" >()</span> =&gt; <span class="cstat-no" title="statement not covered" >setShowForm(true)}</span>
               className="bg-red-600 hover:bg-red-700 text-white text-sm font-medium px-6 py-2.5 rounded-xl transition-colors"
             &gt;
-              Create a playlist
+              Eine Wiedergabeliste erstellen
             &lt;/button&gt;
           &lt;/div&gt;
         )}
@@ -1080,11 +1064,6 @@ function <span class="fstat-no" title="function not covered" >PlaylistCard(</spa
         &lt;h3 className="font-semibold text-sm text-zinc-900 dark:text-zinc-100 line-clamp-1 group-hover:text-red-600 dark:group-hover:text-red-400 transition-colors"&gt;
           {playlist.name}
         &lt;/h3&gt;
-        {playlist.description &amp;&amp; (
-          &lt;p className="text-xs text-zinc-500 dark:text-zinc-400 mt-1 line-clamp-2"&gt;
-            {playlist.description}
-          &lt;/p&gt;
-        )}
       &lt;/div&gt;
 &nbsp;
       {/* Delete button */}
@@ -1210,7 +1189,7 @@ function <span class="fstat-no" title="function not covered" >TrashSmallIcon(</s
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2026-06-27T07:03:26.776Z
+                at 2026-06-28T13:53:53.298Z
             </div>
         <script src="../../prettify.js"></script>
         <script>

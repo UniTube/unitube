@@ -1,37 +1,55 @@
 /// <reference types="cypress" />
 // ***********************************************
-// This example commands.ts shows you how to
-// create various custom commands and overwrite
-// existing commands.
-//
-// For more comprehensive examples of custom
-// commands please read more here:
+// Wiederverwendbare Custom Commands fuer E2E-Tests.
 // https://on.cypress.io/custom-commands
 // ***********************************************
-//
-//
-// -- This is a parent command --
-// Cypress.Commands.add('login', (email, password) => { ... })
-//
-//
-// -- This is a child command --
-// Cypress.Commands.add('drag', { prevSubject: 'element'}, (subject, options) => { ... })
-//
-//
-// -- This is a dual command --
-// Cypress.Commands.add('dismiss', { prevSubject: 'optional'}, (subject, options) => { ... })
-//
-//
-// -- This will overwrite an existing command --
-// Cypress.Commands.overwrite('visit', (originalFn, url, options) => { ... })
-//
-// declare global {
-//   namespace Cypress {
-//     interface Chainable {
-//       login(email: string, password: string): Chainable<void>
-//       drag(subject: string, options?: Partial<TypeOptions>): Chainable<Element>
-//       dismiss(subject: string, options?: Partial<TypeOptions>): Chainable<Element>
-//       visit(originalFn: CommandOriginalFn, url: string, options: Partial<VisitOptions>): Chainable<Element>
-//     }
-//   }
-// }
+
+const API = 'http://127.0.0.1:8088/api/v1'
+
+// Legt ueber die Backend-API einen Nutzer an (fuer Tests mit echtem Konto).
+Cypress.Commands.add('registerUser', (user) => {
+  return cy
+    .request({
+      method: 'POST',
+      url: `${API}/users`,
+      body: {
+        id: null,
+        name: user.name ?? 'E2E',
+        surname: user.surname ?? 'Tester',
+        email: user.email,
+        password: user.password,
+      },
+      failOnStatusCode: false,
+    })
+    .then((response) => {
+      // 201 = erstellt, 200 = bereits vorhanden (je nach Implementierung): beides ok.
+      expect(response.status).to.be.oneOf([200, 201, 409, 500])
+      return response
+    })
+})
+
+// Meldet einen Nutzer ueber das UI-Login-Formular an.
+Cypress.Commands.add('loginViaUI', (email: string, password: string) => {
+  cy.visit('/login')
+  cy.get('input#email').clear().type(email)
+  cy.get('input#password').clear().type(password)
+  cy.contains('button', 'Sich einloggen').click()
+})
+
+declare global {
+  // eslint-disable-next-line @typescript-eslint/no-namespace
+  namespace Cypress {
+    interface RegisterUserOptions {
+      email: string
+      password: string
+      name?: string
+      surname?: string
+    }
+    interface Chainable {
+      registerUser(user: RegisterUserOptions): Chainable<Cypress.Response<unknown>>
+      loginViaUI(email: string, password: string): Chainable<void>
+    }
+  }
+}
+
+export {}

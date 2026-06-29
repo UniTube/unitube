@@ -25,28 +25,28 @@
             <div class='fl pad1y space-right2'>
                 <span class="strong">0% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>0/66</span>
+                <span class='fraction'>0/69</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
                 <span class="strong">0% </span>
                 <span class="quiet">Branches</span>
-                <span class='fraction'>0/58</span>
+                <span class='fraction'>0/60</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
                 <span class="strong">0% </span>
                 <span class="quiet">Functions</span>
-                <span class='fraction'>0/24</span>
+                <span class='fraction'>0/26</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
                 <span class="strong">0% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>0/59</span>
+                <span class='fraction'>0/61</span>
             </div>
         
             
@@ -430,7 +430,10 @@
 <a name='L365'></a><a href='#L365'>365</a>
 <a name='L366'></a><a href='#L366'>366</a>
 <a name='L367'></a><a href='#L367'>367</a>
-<a name='L368'></a><a href='#L368'>368</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+<a name='L368'></a><a href='#L368'>368</a>
+<a name='L369'></a><a href='#L369'>369</a>
+<a name='L370'></a><a href='#L370'>370</a>
+<a name='L371'></a><a href='#L371'>371</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -492,6 +495,9 @@
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -858,7 +864,10 @@ export default function <span class="fstat-no" title="function not covered" >Add
   async function <span class="fstat-no" title="function not covered" >handleAdd(</span>playlistId: number) {
 <span class="cstat-no" title="statement not covered" >    setAddingId(playlistId)</span>
 <span class="cstat-no" title="statement not covered" >    try {</span>
-<span class="cstat-no" title="statement not covered" >      await playlistService.addVideoToPlaylist(playlistId, videoId)</span>
+      const updated = <span class="cstat-no" title="statement not covered" >await playlistService.addVideoToPlaylist(playlistId, videoId)</span>
+<span class="cstat-no" title="statement not covered" >      setPlaylists(<span class="fstat-no" title="function not covered" >(p</span>rev) =&gt;</span>
+<span class="cstat-no" title="statement not covered" >        prev.map(<span class="fstat-no" title="function not covered" >(p</span>laylist) =&gt; (<span class="cstat-no" title="statement not covered" >playlist.id === updated.id ? updated : playlist)</span>),</span>
+      )
 <span class="cstat-no" title="statement not covered" >      setAddedIds(<span class="fstat-no" title="function not covered" >(p</span>rev) =&gt; <span class="cstat-no" title="statement not covered" >new Set([...prev, playlistId]))</span></span>
 <span class="cstat-no" title="statement not covered" >      showToast('success', 'Added to playlist!')</span>
     } catch (err) {
@@ -874,10 +883,10 @@ export default function <span class="fstat-no" title="function not covered" >Add
 <span class="cstat-no" title="statement not covered" >    setCreating(true)</span>
 <span class="cstat-no" title="statement not covered" >    setCreateError(null)</span>
 <span class="cstat-no" title="statement not covered" >    try {</span>
-      const created = <span class="cstat-no" title="statement not covered" >await playlistService.createPlaylist({ name: newName.trim() })</span>
+      const created = <span class="cstat-no" title="statement not covered" >await playlistService.createPlaylist(newName.trim())</span>
       // Immediately add the current video to the new playlist
-<span class="cstat-no" title="statement not covered" >      await playlistService.addVideoToPlaylist(created.id, videoId)</span>
-<span class="cstat-no" title="statement not covered" >      setPlaylists(<span class="fstat-no" title="function not covered" >(p</span>rev) =&gt; <span class="cstat-no" title="statement not covered" >[{ ...created, videoCount: 1 }, ...prev])</span></span>
+      const updated = <span class="cstat-no" title="statement not covered" >await playlistService.addVideoToPlaylist(created.id, videoId)</span>
+<span class="cstat-no" title="statement not covered" >      setPlaylists(<span class="fstat-no" title="function not covered" >(p</span>rev) =&gt; <span class="cstat-no" title="statement not covered" >[updated, ...prev])</span></span>
 <span class="cstat-no" title="statement not covered" >      setAddedIds(<span class="fstat-no" title="function not covered" >(p</span>rev) =&gt; <span class="cstat-no" title="statement not covered" >new Set([...prev, created.id]))</span></span>
 <span class="cstat-no" title="statement not covered" >      setNewName('')</span>
 <span class="cstat-no" title="statement not covered" >      setShowCreateForm(false)</span>
@@ -1171,7 +1180,7 @@ function <span class="fstat-no" title="function not covered" >PlusIcon(</span>) 
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2026-06-27T07:03:26.776Z
+                at 2026-06-28T13:53:53.298Z
             </div>
         <script src="../../prettify.js"></script>
         <script>

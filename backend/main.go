@@ -8,6 +8,7 @@ import (
 	"backend/repositories"
 	"backend/routes"
 	"backend/services"
+	"log"
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
@@ -18,6 +19,14 @@ import (
 
 // @BasePath /api/v1
 func main() {
+	// Initialize file logging (logs/app-YYYY-MM-DD.log) before anything else
+	// so DB connection logs and Gin request logs are captured.
+	logFile, err := config.SetupLogger()
+	if err != nil {
+		log.Fatalf("Failed to initialize logging: %v", err)
+	}
+	defer logFile.Close()
+
 	db := config.ConnectDB()
 	userRepo := repositories.NewUserRepo(db)
 	videoRepo := repositories.NewVideoRepo(db)
