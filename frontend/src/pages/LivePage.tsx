@@ -49,10 +49,12 @@ export default function LivePage({ stream, title, onEnd, onRecordingSaved }: Liv
       }
 
       const blob = await stopRecording()
-      if (blob.size > 0) {
-        savedVideo = await uploadStreamRecording(blob, title)
-        onRecordingSaved?.(savedVideo)
+      if (blob.size === 0) {
+        throw new Error('Recording was empty. Try streaming for a few seconds before ending.')
       }
+
+      savedVideo = await uploadStreamRecording(blob, title)
+      onRecordingSaved?.(savedVideo)
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Failed to save recording'
       setSaveError(message)

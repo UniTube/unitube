@@ -30,7 +30,6 @@ export default function App() {
   }
 
   function handleEndStream() {
-    stream?.getTracks().forEach((t) => t.stop())
     setStream(null)
     setLiveTitle('')
   }

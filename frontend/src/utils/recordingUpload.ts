@@ -6,9 +6,10 @@ export async function uploadStreamRecording(
   title: string,
   description = 'Recorded from live stream',
 ): Promise<Video> {
-  const ext = blob.type.includes('webm') ? 'webm' : 'mp4'
+  const ext = blob.type.includes('webm') ? 'webm' : blob.type.includes('mp4') ? 'mp4' : 'webm'
   const safeTitle = title.trim() || 'Live stream recording'
-  const file = new File([blob], `${safeTitle}.${ext}`, { type: blob.type || 'video/webm' })
+  const defaultType = blob.type.startsWith('audio/') ? 'audio/webm' : 'video/webm'
+  const file = new File([blob], `${safeTitle}.${ext}`, { type: blob.type || defaultType })
 
   const response = await videoService.uploadVideo({
     title: safeTitle,
