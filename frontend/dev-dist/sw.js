@@ -76,69 +76,6 @@ define(['./workbox-bbbdf4d3'], function (workbox) {
    * requests for URLs in the manifest.
    * See https://goo.gl/S9QRab
    */
-<<<<<<< HEAD
-  workbox.precacheAndRoute(
-    [
-      {
-        url: 'registerSW.js',
-        revision: '3ca0b8505b4bec776b69afdba2768812',
-      },
-      {
-        url: 'index.html',
-        revision: '0.rdn5t144b48',
-      },
-    ],
-    {},
-  )
-  workbox.cleanupOutdatedCaches()
-  workbox.registerRoute(
-    new workbox.NavigationRoute(workbox.createHandlerBoundToURL('index.html'), {
-      allowlist: [/^\/$/],
-    }),
-  )
-  workbox.registerRoute(
-    /^https?:\/\/.*\/api\/.*/i,
-    new workbox.NetworkFirst({
-      cacheName: 'api-cache',
-      networkTimeoutSeconds: 10,
-      plugins: [
-        new workbox.ExpirationPlugin({
-          maxEntries: 50,
-          maxAgeSeconds: 86400,
-        }),
-        new workbox.CacheableResponsePlugin({
-          statuses: [0, 200],
-        }),
-      ],
-    }),
-    'GET',
-  )
-  workbox.registerRoute(
-    /\.(?:png|jpg|jpeg|svg|gif|webp)$/i,
-    new workbox.CacheFirst({
-      cacheName: 'image-cache',
-      plugins: [
-        new workbox.ExpirationPlugin({
-          maxEntries: 100,
-          maxAgeSeconds: 2592000,
-        }),
-        new workbox.CacheableResponsePlugin({
-          statuses: [0, 200],
-        }),
-      ],
-    }),
-    'GET',
-  )
-  workbox.registerRoute(
-    /\.(?:js|css|woff2?)$/i,
-    new workbox.StaleWhileRevalidate({
-      cacheName: 'static-assets-cache',
-      plugins: [],
-    }),
-    'GET',
-  )
-})
-=======
   workbox.precacheAndRoute([{
     "url": "registerSW.js",
     "revision": "3ca0b8505b4bec776b69afdba2768812"
@@ -174,5 +111,4 @@ define(['./workbox-bbbdf4d3'], function (workbox) {
     plugins: []
   }), 'GET');
 
-}));
->>>>>>> de26dee (allow saving audio-only live streams)
+});
