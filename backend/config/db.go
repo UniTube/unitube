@@ -28,7 +28,29 @@ func ConnectDB() *gorm.DB {
 	if err != nil {
 		log.Fatal("Failed to connect to database:", err)
 	}
-	db.AutoMigrate(&models.User{}, &models.Video{}, &models.Comment{}, &models.Tag{}, &models.Playlist{})
+	if err := db.AutoMigrate(&models.User{}, &models.Video{}, &models.Comment{}, &models.Tag{}, &models.Playlist{}); err != nil {
+		log.Printf("Warning: AutoMigrate: %v", err)
+	}
+
+	if err := db.Exec(`
+		CREATE TABLE IF NOT EXISTS video_likes (
+			id SERIAL PRIMARY KEY,
+			created_at TIMESTAMPTZ,
+			updated_at TIMESTAMPTZ,
+			deleted_at TIMESTAMPTZ,
+			user_id BIGINT NOT NULL,
+			video_id BIGINT NOT NULL
+		)
+	`).Error; err != nil {
+		log.Fatal("Failed to create video_likes table:", err)
+	}
+	if err := db.Exec(`
+		CREATE UNIQUE INDEX IF NOT EXISTS idx_user_video_like
+		ON video_likes (user_id, video_id)
+		WHERE deleted_at IS NULL
+	`).Error; err != nil {
+		log.Fatal("Failed to create video_likes index:", err)
+	}
 
 	// Seed tags
 	var count int64

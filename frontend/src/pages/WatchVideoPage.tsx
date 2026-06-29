@@ -39,6 +39,7 @@ export default function WatchVideoPage() {
   const [newComment, setNewComment] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [liked, setLiked] = useState(false)
+  const [likeError, setLikeError] = useState<string | null>(null)
 
   // More (⋮) menu
   const [showMoreMenu, setShowMoreMenu] = useState(false)
@@ -61,6 +62,7 @@ export default function WatchVideoPage() {
         setError(null)
         const videoData = await videoService.getVideoById(Number(id))
         setVideo(videoData)
+        setLiked(videoData.likedByMe ?? false)
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to load video')
         setVideo(null)
@@ -93,12 +95,24 @@ export default function WatchVideoPage() {
     return () => document.removeEventListener('mousedown', handleOutside)
   }, [showMoreMenu])
 
-  const handleLike = async () => {
-    if (liked || !video) return
+  const handleLikeToggle = async () => {
+    if (!video) return
+    if (!isAuthenticated) {
+      setLikeError('Please log in to like videos.')
+      return
+    }
+    setLikeError(null)
     try {
-      await videoService.likeVideo(video.id)
-      setLiked(true)
-    } catch {}
+      if (liked) {
+        await videoService.unlikeVideo(video.id)
+        setLiked(false)
+      } else {
+        await videoService.likeVideo(video.id)
+        setLiked(true)
+      }
+    } catch (err) {
+      setLikeError(err instanceof Error ? err.message : 'Failed to update like.')
+    }
   }
 
   const handleAddComment = async () => {
@@ -182,19 +196,22 @@ export default function WatchVideoPage() {
             <div className="flex items-center gap-2 flex-shrink-0 mt-1">
               {/* Like button */}
               <button
-                onClick={handleLike}
-                disabled={liked}
-                aria-label="Like this video"
+                onClick={handleLikeToggle}
+                aria-label={liked ? 'Unlike this video' : 'Like this video'}
+                aria-pressed={liked}
                 className={`flex items-center gap-1.5 px-4 py-1.5 rounded-full text-sm font-medium border transition-colors
                   ${
                     liked
-                      ? 'bg-red-600 border-red-600 text-white cursor-default'
+                      ? 'bg-red-600 border-red-600 text-white hover:bg-red-700 hover:border-red-700'
                       : 'border-red-200 dark:border-zinc-700 text-gray-600 dark:text-zinc-300 hover:border-red-400 hover:text-red-600 dark:hover:text-red-400'
                   }`}
               >
                 <ThumbUpIcon filled={liked} />
                 {liked ? 'Liked' : 'Like'}
               </button>
+              {likeError && (
+                <p className="text-xs text-red-600 dark:text-red-400">{likeError}</p>
+              )}
 
               {/* Author-only actions */}
               {isAuthor && (

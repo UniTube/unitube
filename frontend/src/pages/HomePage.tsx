@@ -212,7 +212,7 @@ export default function HomePage({ isLive, onUpload, onDelete, onGoLive }: HomeP
 
       {/* Dynamic Tag Chips List */}
       <div className="w-full bg-white dark:bg-zinc-900 border-b border-red-50 dark:border-zinc-800 shadow-sm">
-        <div className="flex gap-2 sm:gap-3 overflow-x-auto py-3 px-4 max-w-7xl mx-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
+        <div className="flex gap-2 sm:gap-3 overflow-x-auto py-3 px-4 max-w-7xl mx-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] scrollbar-none">
           {tags.map((tag) => (
             <button
               key={tag}

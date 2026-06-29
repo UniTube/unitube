@@ -34,6 +34,23 @@ func RequireAuth(ctx *gin.Context) {
 	ctx.Next()
 }
 
+func TryGetAuthenticatedEmail(ctx *gin.Context) (string, error) {
+	token, _ := ctx.Cookie("Authorization")
+	if token == "" {
+		authHeader := ctx.GetHeader("Authorization")
+		if strings.HasPrefix(authHeader, "Bearer ") {
+			token = strings.TrimPrefix(authHeader, "Bearer ")
+		}
+	}
+	if token == "" {
+		return "", fmt.Errorf("authorization is required")
+	}
+	if err := verifyToken(token); err != nil {
+		return "", err
+	}
+	return emailFromToken(token)
+}
+
 func GetAuthenticatedEmail(ctx *gin.Context) (string, error) {
 	if email, ok := ctx.Get("authEmail"); ok {
 		if emailStr, ok := email.(string); ok && emailStr != "" {

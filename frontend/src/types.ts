@@ -8,6 +8,8 @@ export interface Video {
   authorId: number
   url?: string
   tags?: string[]
+  likes?: number
+  likedByMe?: boolean
 }
 
 export interface User {
@@ -59,6 +61,8 @@ export interface UploadVideoResponse {
   authorId: number
   url: string
   tags?: string[]
+  likes?: number
+  likedByMe?: boolean
 }
 
 export interface Comment {
@@ -79,6 +83,8 @@ export interface VideoResponse {
   authorId: number
   url: string
   tags?: string[]
+  likes?: number
+  likedByMe?: boolean
 }
 
 export interface Playlist {

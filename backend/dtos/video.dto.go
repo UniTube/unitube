@@ -22,4 +22,6 @@ type VideoResponseDTO struct {
 	UploadedAt  string   `json:"uploadedAt"`
 	URL         string   `json:"url"`
 	Tags        []string `json:"tags"`
+	Likes       int      `json:"likes"`
+	LikedByMe   bool     `json:"likedByMe"`
 }

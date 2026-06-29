@@ -40,15 +40,19 @@ func setupRouter() *gin.Engine {
 		panic(err)
 	}
 	
-	db.AutoMigrate(&models.User{}, &models.Video{}, &models.Comment{}, &models.Tag{}, &models.Playlist{})
+	db.AutoMigrate(&models.User{}, &models.Video{}, &models.Comment{}, &models.Tag{}, &models.Playlist{}, &models.VideoLike{})
 	testDB = db
 	return router
 }
 
 func setupVideoRoutes(router *gin.Engine) *gin.Engine {
-	videoService := services.NewVideoService(repositories.NewVideoRepo(testDB))
-	userService := services.NewUserService(repositories.NewUserRepo(testDB), videoService)
-	videoController := controllers.NewVideoController(videoService, userService)
+	videoRepo := repositories.NewVideoRepo(testDB)
+	userRepo := repositories.NewUserRepo(testDB)
+	videoService := services.NewVideoService(videoRepo)
+	userService := services.NewUserService(userRepo, videoService)
+	likeRepo := repositories.NewLikeRepo(testDB)
+	commentService := services.NewCommentService(repositories.NewCommentRepo(testDB), videoRepo, userRepo, likeRepo)
+	videoController := controllers.NewVideoController(videoService, userService, commentService)
 	
 	// Set dummy JWT secret for tests
 	os.Setenv("JWT_SECRET", "test_secret")

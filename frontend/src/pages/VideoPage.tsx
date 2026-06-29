@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react'
 import Header from '../components/Header'
 import VideoPlayer from '../components/VideoPlayer'
 import videoService from '../services/videoService'
+import authService from '../services/authService'
 import { Video, Comment } from '../types'
 
 export default function VideoPage() {
@@ -16,6 +17,8 @@ export default function VideoPage() {
   const [newComment, setNewComment] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [liked, setLiked] = useState(false)
+  const [likeError, setLikeError] = useState<string | null>(null)
+  const isAuthenticated = authService.isAuthenticated()
 
   // Load video by ID
   useEffect(() => {
@@ -30,6 +33,7 @@ export default function VideoPage() {
         setError(null)
         const data = await videoService.getVideoById(Number(id))
         setVideo(data)
+        setLiked(data.likedByMe ?? false)
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to load video')
       } finally {
@@ -48,12 +52,24 @@ export default function VideoPage() {
       .catch(() => {})
   }, [video?.id])
 
-  const handleLike = async () => {
-    if (liked || !video) return
+  const handleLikeToggle = async () => {
+    if (!video) return
+    if (!isAuthenticated) {
+      setLikeError('Please log in to like videos.')
+      return
+    }
+    setLikeError(null)
     try {
-      await videoService.likeVideo(video.id)
-      setLiked(true)
-    } catch {}
+      if (liked) {
+        await videoService.unlikeVideo(video.id)
+        setLiked(false)
+      } else {
+        await videoService.likeVideo(video.id)
+        setLiked(true)
+      }
+    } catch (err) {
+      setLikeError(err instanceof Error ? err.message : 'Failed to update like.')
+    }
   }
 
   const handleAddComment = async () => {
@@ -121,21 +137,25 @@ export default function VideoPage() {
           <div className="flex items-start justify-between gap-4">
             <h1 className="text-xl font-semibold leading-snug">{video.title}</h1>
 
-            {/* Like button */}
-            <button
-              onClick={handleLike}
-              disabled={liked}
-              aria-label="Like this video"
-              className={`flex items-center gap-1.5 px-4 py-1.5 rounded-full text-sm font-medium border transition-colors shrink-0
-                ${
-                  liked
-                    ? 'bg-red-600 border-red-600 text-white cursor-default'
-                    : 'border-red-200 dark:border-zinc-700 text-gray-600 dark:text-zinc-300 hover:border-red-400 hover:text-red-600 dark:hover:text-red-400'
-                }`}
-            >
-              <ThumbUpIcon filled={liked} />
-              {liked ? 'Liked' : 'Like'}
-            </button>
+            <div className="flex flex-col items-end gap-1 shrink-0">
+              <button
+                onClick={handleLikeToggle}
+                aria-label={liked ? 'Unlike this video' : 'Like this video'}
+                aria-pressed={liked}
+                className={`flex items-center gap-1.5 px-4 py-1.5 rounded-full text-sm font-medium border transition-colors
+                  ${
+                    liked
+                      ? 'bg-red-600 border-red-600 text-white hover:bg-red-700 hover:border-red-700'
+                      : 'border-red-200 dark:border-zinc-700 text-gray-600 dark:text-zinc-300 hover:border-red-400 hover:text-red-600 dark:hover:text-red-400'
+                  }`}
+              >
+                <ThumbUpIcon filled={liked} />
+                {liked ? 'Liked' : 'Like'}
+              </button>
+              {likeError && (
+                <p className="text-xs text-red-600 dark:text-red-400">{likeError}</p>
+              )}
+            </div>
           </div>
 
           <div className="flex items-center justify-between mt-3 pb-4 border-b border-gray-200 dark:border-zinc-800">

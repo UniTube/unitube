@@ -30,6 +30,8 @@ export function mapVideo(video: VideoResponse): UploadVideoResponse {
     authorId: video.authorId,
     url: getStreamUrl(video.id),
     tags: video.tags || [],
+    likes: video.likes ?? 0,
+    likedByMe: video.likedByMe ?? false,
   }
 }
 
@@ -88,10 +90,16 @@ class VideoService {
   }
 
   async getVideoById(id: number): Promise<UploadVideoResponse> {
-    const response = await fetch(`${API_BASE_URL}/videos/${id}/metadata`, {
-      method: 'GET',
-      headers: { Accept: 'application/json' },
-    })
+    const url = `${API_BASE_URL}/videos/${id}/metadata`
+    const response = authService.isAuthenticated()
+      ? await authService.authenticatedFetch(url, {
+          method: 'GET',
+          headers: { Accept: 'application/json' },
+        })
+      : await fetch(url, {
+          method: 'GET',
+          headers: { Accept: 'application/json' },
+        })
     if (!response.ok) throw new Error(`Failed to fetch video with status ${response.status}`)
     return mapVideo(await response.json())
   }
@@ -142,6 +150,16 @@ class VideoService {
       },
     )
     if (!response.ok) throw new Error(`Failed to like video with status ${response.status}`)
+  }
+
+  async unlikeVideo(videoId: number): Promise<void> {
+    const response = await authService.authenticatedFetch(
+      `${API_BASE_URL}/videos/${videoId}/like`,
+      {
+        method: 'DELETE',
+      },
+    )
+    if (!response.ok) throw new Error(`Failed to unlike video with status ${response.status}`)
   }
 
   async filterVideos(name?: string, tags?: string[]): Promise<UploadVideoResponse[]> {

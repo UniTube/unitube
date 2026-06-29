@@ -64,10 +64,12 @@ export default function VideoCard({ video, onDelete, currentUserId }: VideoCardP
       </button>}
 
       {/* Video Information */}
-      <Link to={`/watch/${video.id}`} className="flex-1 min-w-0 hover:no-underline">
-        <h3 className="font-medium text-sm text-gray-900 dark:text-zinc-100 line-clamp-2 group-hover:text-red-600 dark:group-hover:text-red-400 transition-colors">
-          {video.title}
-        </h3>
+      <div className="flex-1 min-w-0">
+        <Link to={`/watch/${video.id}`} className="hover:no-underline">
+          <h3 className="font-medium text-sm text-gray-900 dark:text-zinc-100 line-clamp-2 group-hover:text-red-600 dark:group-hover:text-red-400 transition-colors">
+            {video.title}
+          </h3>
+        </Link>
         <p className="text-xs text-gray-600 dark:text-zinc-400 mt-1 truncate">
           <Link
             to={authorProfilePath}
@@ -77,10 +79,13 @@ export default function VideoCard({ video, onDelete, currentUserId }: VideoCardP
             {video.author}
           </Link>
         </p>
-        <p className="text-xs text-gray-500 dark:text-zinc-500 mt-0.5">
+        <Link
+          to={`/watch/${video.id}`}
+          className="block text-xs text-gray-500 dark:text-zinc-500 mt-0.5 hover:no-underline"
+        >
           {video.size} • {video.uploadedAt}
-        </p>
-      </Link>
+        </Link>
+      </div>
     </div>
   )
 }

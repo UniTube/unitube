@@ -19,12 +19,13 @@ import (
 )
 
 type VideoController struct {
-	videoService *services.VideoService
-	userService  *services.UserService
+	videoService   *services.VideoService
+	userService    *services.UserService
+	commentService *services.CommentService
 }
 
-func NewVideoController(videoService *services.VideoService, userService *services.UserService) *VideoController {
-	return &VideoController{videoService: videoService, userService: userService}
+func NewVideoController(videoService *services.VideoService, userService *services.UserService, commentService *services.CommentService) *VideoController {
+	return &VideoController{videoService: videoService, userService: userService, commentService: commentService}
 }
 
 // CreateVideo godoc
@@ -137,7 +138,16 @@ func (c *VideoController) GetVideoMetadata(ctx *gin.Context) {
 		return
 	}
 
-	ctx.JSON(http.StatusOK, c.videoService.ToVideoResponse(video))
+	response := c.videoService.ToVideoResponse(video)
+	if email, err := middlewares.TryGetAuthenticatedEmail(ctx); err == nil {
+		if user, err := c.userService.GetUserByEmail(email); err == nil {
+			if liked, err := c.commentService.HasUserLiked(user.ID, id); err == nil {
+				response.LikedByMe = liked
+			}
+		}
+	}
+
+	ctx.JSON(http.StatusOK, response)
 }
 
 
