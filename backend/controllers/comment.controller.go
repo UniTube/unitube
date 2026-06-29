@@ -98,3 +98,37 @@ func (c *CommentController) LikeVideo(ctx *gin.Context) {
 	}
 	ctx.JSON(http.StatusOK, gin.H{"message": "Video liked"})
 }
+
+// UnlikeVideo godoc
+// @Summary Unlike a video
+// @Tags videos
+// @Produce json
+// @Param id path integer true "Video ID"
+// @Success 200 {object} map[string]string
+// @Failure 400 {object} map[string]string
+// @Failure 500 {object} map[string]string
+// @Router /videos/{id}/like [delete]
+func (c *CommentController) UnlikeVideo(ctx *gin.Context) {
+	var videoID uint
+	if _, err := fmt.Sscanf(ctx.Param("id"), "%d", &videoID); err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": "Invalid video ID"})
+		return
+	}
+
+	email, err := middlewares.GetAuthenticatedEmail(ctx)
+	if err != nil {
+		ctx.JSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
+		return
+	}
+	user, err := c.service.GetUserByEmail(email)
+	if err != nil {
+		ctx.JSON(http.StatusUnauthorized, gin.H{"error": "User not found"})
+		return
+	}
+
+	if err := c.service.UnlikeVideo(user.ID, videoID); err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	ctx.JSON(http.StatusOK, gin.H{"message": "Video unliked"})
+}

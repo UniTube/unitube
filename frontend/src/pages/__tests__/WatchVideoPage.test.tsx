@@ -17,6 +17,7 @@ jest.mock('../../services/videoService', () => ({
   getVideoById: jest.fn(),
   getComments: jest.fn(),
   likeVideo: jest.fn(),
+  unlikeVideo: jest.fn(),
   addComment: jest.fn(),
   deleteVideo: jest.fn(),
   getStreamUrl: (id: number) => `http://127.0.0.1:8088/api/v1/videos/${id}`,
@@ -70,7 +71,8 @@ describe('WatchVideoPage', () => {
   })
 
   test('handles liking a video', async () => {
-    (authService.getUser as jest.Mock).mockReturnValue({ id: 1, surname: 'User' })
+    (authService.getUser as jest.Mock).mockReturnValue({ id: 1, surname: 'User' });
+    (authService.isAuthenticated as jest.Mock).mockReturnValue(true)
     render(<WatchVideoPage />)
 
     await screen.findByText('UniTube Tutorial')
@@ -80,7 +82,7 @@ describe('WatchVideoPage', () => {
 
     await waitFor(() => {
       expect(videoService.likeVideo).toHaveBeenCalledWith(42)
-      expect(screen.getByRole('button', { name: /like this video/i })).toHaveTextContent('Liked')
+      expect(screen.getByRole('button', { name: /unlike this video/i })).toHaveTextContent('Liked')
     })
   })
 
@@ -89,9 +91,26 @@ describe('WatchVideoPage', () => {
     render(<WatchVideoPage />)
 
     await waitFor(() => {
-      const likeButton = screen.getByRole('button', { name: /like this video/i })
+      const likeButton = screen.getByRole('button', { name: /unlike this video/i })
       expect(likeButton).toHaveTextContent('Liked')
-      expect(likeButton).toBeDisabled()
+      expect(likeButton).not.toBeDisabled()
+    })
+  })
+
+  test('handles unliking a video', async () => {
+    (authService.getUser as jest.Mock).mockReturnValue({ id: 1, surname: 'User' });
+    (authService.isAuthenticated as jest.Mock).mockReturnValue(true);
+    (videoService.getVideoById as jest.Mock).mockResolvedValue({ ...mockVideo, likedByMe: true })
+    render(<WatchVideoPage />)
+
+    await screen.findByText('UniTube Tutorial')
+
+    const unlikeButton = screen.getByRole('button', { name: /unlike this video/i })
+    fireEvent.click(unlikeButton)
+
+    await waitFor(() => {
+      expect(videoService.unlikeVideo).toHaveBeenCalledWith(42)
+      expect(screen.getByRole('button', { name: /like this video/i })).toHaveTextContent('Like')
     })
   })
 

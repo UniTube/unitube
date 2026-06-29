@@ -33,3 +33,18 @@ func (r *LikeRepo) CreateLike(userID, videoID uint) error {
 			UpdateColumn("likes", gorm.Expr("likes + 1")).Error
 	})
 }
+
+func (r *LikeRepo) DeleteLike(userID, videoID uint) error {
+	return r.Db.Transaction(func(tx *gorm.DB) error {
+		result := tx.Where("user_id = ? AND video_id = ?", userID, videoID).Delete(&models.VideoLike{})
+		if result.Error != nil {
+			return result.Error
+		}
+		if result.RowsAffected == 0 {
+			return nil
+		}
+		return tx.Model(&models.Video{}).
+			Where("id = ? AND likes > 0", videoID).
+			UpdateColumn("likes", gorm.Expr("likes - 1")).Error
+	})
+}

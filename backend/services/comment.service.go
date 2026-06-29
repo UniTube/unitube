@@ -72,6 +72,18 @@ func (s *CommentService) LikeVideo(userID, videoID uint) error {
 	return s.likeRepo.CreateLike(userID, videoID)
 }
 
+// UnlikeVideo removes the user's like and decrements the counter (idempotent).
+func (s *CommentService) UnlikeVideo(userID, videoID uint) error {
+	liked, err := s.likeRepo.HasUserLiked(userID, videoID)
+	if err != nil {
+		return err
+	}
+	if !liked {
+		return nil
+	}
+	return s.likeRepo.DeleteLike(userID, videoID)
+}
+
 func (s *CommentService) HasUserLiked(userID, videoID uint) (bool, error) {
 	return s.likeRepo.HasUserLiked(userID, videoID)
 }

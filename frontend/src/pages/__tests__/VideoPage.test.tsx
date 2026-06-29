@@ -2,6 +2,7 @@ import { render, screen, fireEvent, waitFor } from '@testing-library/react'
 import '@testing-library/jest-dom'
 import VideoPage from '../VideoPage'
 import videoService from '../../services/videoService'
+import authService from '../../services/authService'
 
 const mockNavigate = jest.fn()
 
@@ -16,9 +17,12 @@ jest.mock('../../services/videoService', () => ({
   getVideoById: jest.fn(),
   getComments: jest.fn(),
   likeVideo: jest.fn(),
+  unlikeVideo: jest.fn(),
   addComment: jest.fn(),
   getStreamUrl: (id: number) => `http://127.0.0.1:8088/api/v1/videos/${id}`,
 }))
+
+jest.mock('../../services/authService')
 
 jest.mock('../../components/Header', () => () => <div data-testid="header" />)
 jest.mock('../../components/VideoPlayer', () => ({ src, title }: any) => (
@@ -63,6 +67,7 @@ describe('VideoPage', () => {
   })
 
   test('handles liking a video successfully', async () => {
+    (authService.isAuthenticated as jest.Mock).mockReturnValue(true)
     render(<VideoPage />)
 
     await screen.findByText('Testing VideoPage')
@@ -73,7 +78,7 @@ describe('VideoPage', () => {
     await waitFor(() => {
       expect(videoService.likeVideo).toHaveBeenCalledWith(12)
       expect(likeBtn).toHaveTextContent('Liked')
-      expect(likeBtn).toBeDisabled()
+      expect(likeBtn).not.toBeDisabled()
     })
   })
 

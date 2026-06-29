@@ -152,6 +152,16 @@ class VideoService {
     if (!response.ok) throw new Error(`Failed to like video with status ${response.status}`)
   }
 
+  async unlikeVideo(videoId: number): Promise<void> {
+    const response = await authService.authenticatedFetch(
+      `${API_BASE_URL}/videos/${videoId}/like`,
+      {
+        method: 'DELETE',
+      },
+    )
+    if (!response.ok) throw new Error(`Failed to unlike video with status ${response.status}`)
+  }
+
   async filterVideos(name?: string, tags?: string[]): Promise<UploadVideoResponse[]> {
     const params = new URLSearchParams()
     if (name) params.append('name', name)

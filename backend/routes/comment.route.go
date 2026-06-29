@@ -12,4 +12,5 @@ func SetupCommentRoutes(router *gin.RouterGroup, controller *controllers.Comment
 	router.POST("/videos/:id/comments", middlewares.RequireAuth,  controller.AddComment)
 	router.GET("/videos/:id/comments", controller.GetComments)
 	router.POST("/videos/:id/like", middlewares.RequireAuth, controller.LikeVideo)
+	router.DELETE("/videos/:id/like", middlewares.RequireAuth, controller.UnlikeVideo)
 }
